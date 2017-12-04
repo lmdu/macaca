@@ -8,13 +8,21 @@ class Chromosome(models.Model):
 	name = models.CharField(max_length=10)
 	size = models.IntegerField()
 
+class Species(models.Model):
+	common_name = models.CharField(max_length=50)
+	scientific_name = models.CharField(max_length=50)
+	identifier = models.CharField(max_length=5)
+	sample = models.CharField(max_length=20)
+	location = models.CharField(max_length=100)
+	taxonomy = models.IntegerField()
+
 class Snp(models.Model):
-	chrom = models.ForeignKey('Chromosome')
+	chromosome = models.ForeignKey(Chromosome)
 	position = models.IntegerField()
 	reference = models.CharField(max_length=1)
 	alteration = models.CharField(max_length=1)
-	five = models.CharField(max_length=100)
-	three = models.CharField(max_length=100)
+	five_flank = models.CharField(max_length=50)
+	three_flank = models.CharField(max_length=50)
 
 class Variant(models.Model):
 	NONMUTATION = 0
@@ -25,17 +33,22 @@ class Variant(models.Model):
 		(HETEROZYGOTE, '0/1'),
 		(HOMOZYGOTE, '1/1'),
 	)
-	snp = models.ForeignKey('Snp')
-	species = models.ForeignKey('Species')
+	snp = models.ForeignKey(Snp)
+	species = models.ForeignKey(Species)
 	genotype = models.IntegerField(choices=GENOTYPES)
 
-class Species(models.Model):
-	common = models.CharField(max_length=50)
-	scientific = models.CharField(max_length=50)
-	code = models.CharField(max_length=5)
-	sample = models.CharField(max_length=20)
-	location = models.CharField(max_length=100)
-	taxonomy = models.IntegerField()
+class Gene(models.Model):
+	ensembl_id = models.CharField(max_length=18)
+	name = models.CharField(max_length=20)
+	description = models.CharField(max_length=200)
+	start = models.IntegerField()
+	end = models.IntegerField()
+	strand = models.CharField(max_length=1)
+
+class Transcript(models.Model):
+	ensembl_id = models.CharField(max_length=18)
+	parent = models.ForeignKey('Gene')
+	protein = models.CharField(max_length=18)
 
 class GeneAnnotation(models.Model):
 	CDS = 1
@@ -44,34 +57,24 @@ class GeneAnnotation(models.Model):
 	INTRON = 4
 	FIVE_UTR = 5
  	FEATURES = (
-		(INTRON, 'Intron')
+		(INTRON, 'Intron'),
 		(CDS, 'CDS'),
 		(EXON, 'Exon'),
 		(THREE_UTR, "3'UTR"),
 		(FIVE_UTR, "5'UTR")
 	)
-	snp = models.ForeignKey('Snp')
-	gene = models.ForeignKey('Gene')
-	relpos = models.IntegerField()
-	feature = models.IntegerField(choices=FEATURES)
+	snp = models.ForeignKey(Snp)
+	from_gene = models.ForeignKey(Gene)
+	gene_relative_position = models.IntegerField()
+	gene_feature = models.IntegerField(choices=FEATURES)
 
 class TanscriptAnnotation(models.Model):
-	snp = models.ForeignKey('Snp')
-	transcript = models.ForeignKey('Transcript')
-	trelpos = models.IntegerField()
+	snp = models.ForeignKey(Snp)
+	from_transcript = models.ForeignKey(Transcript)
+	transcript_relative_position = models.IntegerField()
 	codon = models.CharField(max_length=3)
-	prelpos = models.IntegerField()
-	aa = models.CharField(max_length=1)
+	protein_relative_position = models.IntegerField()
+	amino_acid = models.CharField(max_length=1)
 
-class Gene(models.Model):
-	gid = models.CharField(max_length=30)
-	name = models.CharField(max_length=20)
-	description = models.CharField(max_length=200)
-	strand = models.CharField(max_length=1)
-	
 
-class Transcript(models.Model):
-	tid = models.CharField(max_length=30)
-	parent = models.ForeignKey('Gene')
-	protein = models.CharField(max_length=30)
 
