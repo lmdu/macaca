@@ -9,12 +9,22 @@ class Chromosome(models.Model):
 	size = models.IntegerField()
 
 class Species(models.Model):
-	common_name = models.CharField(max_length=50)
+	taxonomy = models.IntegerField()
 	scientific_name = models.CharField(max_length=50)
-	identifier = models.CharField(max_length=5)
+	common_name = models.CharField(max_length=50)
+	group = models.CharField(max_length=15)
+	code = models.CharField(max_length=5)
 	sample = models.CharField(max_length=20)
 	location = models.CharField(max_length=100)
-	taxonomy = models.IntegerField()
+	non_variant = models.BigIntegerField()
+	heterozygous = models.IntegerField()
+	homozygous = models.IntegerField()
+	total_variant = models.IntegerField()
+	total_useable = models.BigIntegerField()
+	heterozygosity = models.FloatField()
+	snv_rate = models.FloatField()
+	pcr_duplicates = models.FloatField()
+	mean_coverage = models.FloatField()
 
 class Snp(models.Model):
 	chromosome = models.ForeignKey(Chromosome)
@@ -56,12 +66,16 @@ class GeneAnnotation(models.Model):
 	THREE_UTR = 3
 	INTRON = 4
 	FIVE_UTR = 5
+	START_CODON = 6
+	STOP_CODON = 7
  	FEATURES = (
 		(INTRON, 'Intron'),
 		(CDS, 'CDS'),
 		(EXON, 'Exon'),
 		(THREE_UTR, "3'UTR"),
-		(FIVE_UTR, "5'UTR")
+		(FIVE_UTR, "5'UTR"),
+		(START_CODON, "Start_codon"),
+		(STOP_CODON, "Stop_codon")
 	)
 	snp = models.ForeignKey(Snp)
 	from_gene = models.ForeignKey(Gene)
@@ -73,8 +87,10 @@ class TanscriptAnnotation(models.Model):
 	from_transcript = models.ForeignKey(Transcript)
 	transcript_relative_position = models.IntegerField()
 	codon = models.CharField(max_length=3)
-	protein_relative_position = models.IntegerField()
+	codon_relative_position = models.IntegerField()
 	amino_acid = models.CharField(max_length=1)
+	protein_relative_position = models.IntegerField()
+	
 
 
 
