@@ -48,9 +48,26 @@ class Variant(models.Model):
 	genotype = models.IntegerField(choices=GENOTYPES)
 
 class Gene(models.Model):
+	PROTEIN_CODING = 1
+	PSEUDOGENE = 2
+	SNRNA = 3
+	RRNA = 4
+	MIRNA = 5
+	MISCRNA = 6
+	SNORNA = 7
+	CODING_TYPES = (
+		(PROTEIN_CODING, 'protein coding'),
+		(PSEUDOGENE, 'pseudogene'),
+		(SNRNA, 'snRNA'),
+		(RRNA, 'rRNA'),
+		(MIRNA, 'miRNA'),
+		(MISCRNA, 'miscRNA'),
+		(SNORNA, 'snoRNA')
+	)
 	ensembl_id = models.CharField(max_length=18)
 	name = models.CharField(max_length=20)
 	description = models.CharField(max_length=200)
+	biotype = models.IntegerField(choices=CODING_TYPES)
 	start = models.IntegerField()
 	end = models.IntegerField()
 	strand = models.CharField(max_length=1)
