@@ -6,7 +6,7 @@ from django.db import models
 # Create your models here.
 class Chromosome(models.Model):
 	name = models.CharField(max_length=10)
-	size = models.IntegerField()
+	size = models.BigIntegerField()
 
 class Species(models.Model):
 	taxonomy = models.IntegerField()
@@ -59,6 +59,9 @@ class Transcript(models.Model):
 	ensembl_id = models.CharField(max_length=18)
 	parent = models.ForeignKey('Gene')
 	protein = models.CharField(max_length=18)
+	start = models.IntegerField()
+	end = models.IntegerField()
+	strand = models.CharField(max_length=1)
 
 class GeneAnnotation(models.Model):
 	CDS = 1

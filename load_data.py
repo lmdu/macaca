@@ -19,5 +19,5 @@ def main():
 	Blog.objects.bulk_create(BlogList)
 
 if __name__ == '__main__':
-	main()
+	main() 
 	
