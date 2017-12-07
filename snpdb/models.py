@@ -86,23 +86,19 @@ class GeneAnnotation(models.Model):
 	THREE_UTR = 3
 	INTRON = 4
 	FIVE_UTR = 5
-	START_CODON = 6
-	STOP_CODON = 7
  	FEATURES = (
 		(INTRON, 'Intron'),
 		(CDS, 'CDS'),
 		(EXON, 'Exon'),
 		(THREE_UTR, "3'UTR"),
-		(FIVE_UTR, "5'UTR"),
-		(START_CODON, "Start_codon"),
-		(STOP_CODON, "Stop_codon")
+		(FIVE_UTR, "5'UTR")
 	)
 	snp = models.ForeignKey(Snp)
 	from_gene = models.ForeignKey(Gene)
 	gene_relative_position = models.IntegerField()
 	gene_feature = models.IntegerField(choices=FEATURES)
 
-class TanscriptAnnotation(models.Model):
+class TranscriptAnnotation(models.Model):
 	snp = models.ForeignKey(Snp)
 	from_transcript = models.ForeignKey(Transcript)
 	transcript_relative_position = models.IntegerField()
