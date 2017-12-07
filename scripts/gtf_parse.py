@@ -35,14 +35,14 @@ def gtf_parser(annot_file):
 			yield record
 
 if __name__ == '__main__':
-	operator = sys.argv[1]
+	gtf_file, operator = sys.argv[1:]
 
-	parser =  gtf_parser('Macaca_mulatta.MMUL_1.85.gtf')
+	parser =  gtf_parser(gtf_file)
 
 	if operator == 'gene':
 		for row in parser:
 			if row.feature == 'gene':
-				print "\t".join((row.seqid, row.attrs.gene_id, row.attrs.gene_name, row.start, row.end, row.strand))
+				print "\t".join((row.seqid, row.attrs.gene_id, row.attrs.gene_name, row.attrs.gene_biotype, row.start, row.end, row.strand))
 
 	elif operator == 'transcript':
 		for row in parser:

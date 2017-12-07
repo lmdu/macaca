@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "macaca.settings")
 import django
 if django.VERSION >= (1, 7):
@@ -9,6 +11,7 @@ if django.VERSION >= (1, 7):
 data_dir = sys.argv[1]
 
 #load reference genome chromosome information
+print "load reference chromosome information"
 from snpdb.models import Chromosome
 chromos = []
 chromo_file = os.path.join(data_dir, 'chromosome_table.txt')
@@ -20,6 +23,7 @@ with open(chromo_file) as fh:
 Chromosome.objects.bulk_create(chromos)
 
 #load species information
+print "load species information"
 from snpdb.models import Species
 species = []
 species_file = os.path.join(data_dir, 'species_table.txt')
@@ -48,7 +52,18 @@ with open(species_file) as fh:
 Species.objects.bulk_create(species)
 
 #load gene information
+print "load reference gene information"
 from snpdb.models import Gene
+biotypes = dict(
+	miRNA = 5,
+	misc_RNA = 6,
+	protein_coding= 1,
+	pseudogene = 2,
+	rRNA = 4,
+	snoRNA = 7,
+	snRNA = 3
+)
+
 genes = []
 gene_file = os.path.join(data_dir, 'gene_table.txt')
 with open(gene_file) as fh:
@@ -58,30 +73,31 @@ with open(gene_file) as fh:
 			ensembl_id = cols[1],
 			name = cols[2],
 			description = cols[-1],
-			start = int(cols[3]),
-			end = int(cols[4]),
-			strand = int(cols[5])
+			biotype = biotypes[cols[3]],
+			start = int(cols[4]),
+			end = int(cols[5]),
+			strand = cols[6]
 		)
 		genes.append(gene)
 Gene.objects.bulk_create(genes)
 
 #load transcript information
+print "load reference transcript information"
+gene_mapping = {g.ensembl_id: g for g in Gene.objects.all()}
+
 from snpdb.models import Transcript
-
-
-
-
-def main():
-	from blog.models import Blog
-	f = open('oldblog.txt')
-	BlogList = []
-	for line in f:
-		title,content = line.split('****')
-		blog = Blog(title=title,content=content)
-		BlogList.append(blog)
-	f.close()
-
-	Blog.objects.bulk_create(BlogList)
-
-if __name__ == '__main__':
-	main() 
+transcripts = []
+transcript_file = os.path.join(data_dir, 'transcript_table.txt')
+with open(transcript_file) as  fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		transcript = Transcript(
+			ensembl_id = cols[1],
+			protein = cols[6],
+			start = int(cols[3]),
+			end = int(cols[4]),
+			strand = cols[5],
+			parent = gene_mapping[cols[2]]
+		)
+		transcripts.append(transcript)
+Transcript.objects.bulk_create(transcripts)
