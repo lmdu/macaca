@@ -30,23 +30,23 @@
 	<table class="ui celled table">
 		<thead>
 			<tr>
-				<th>SNP ID</th>
-				<th>Position</th>
+				<th>Taxonomy</th>
+				<th>Scientific name</th>
+				<th>Common name</th>
+				<th>Group</th>
 				<th>Individual</th>
-				<th>Reference</th>
-				<th>Alteration</th>
-				<th>Genotype</th>
+				<th>Location</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for snp in snps %}
+			{% for s in species %}
 			<tr>
-				<td>MACSNP{{snp.snp.id}}</td>
-				<td>{{snp.snp.chromosome.name}}: {{snp.snp.position}}</td>
-				<td>{{snp.species.code}}</td>
-				<td>{{snp.snp.reference}}</td>
-				<td>{{snp.snp.alteration}}</td>
-				<td>{{snp.get_genotype_display}}</td>
+				<td>{{s.taxonomy}}</td>
+				<td><i>{{s.scientific_name}}</i></td>
+				<td>{{s.common_name}}</td>
+				<td>{{s.group}}</td>
+				<td>{{s.code}}</td>
+				<td>{{s.location}}</td>
 			</tr>
 			{% endfor %}
 		</tbody>
