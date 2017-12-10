@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="ui segment">
+	MACSNP{{"%02d%02d%08d"|format(snp.snp.chromosome.id,snp.species.id,snp.snp.id)}}
+</div>
+{% endblock %}

@@ -27,7 +27,7 @@ class Species(models.Model):
 	mean_coverage = models.FloatField()
 
 class Snp(models.Model):
-	chromosome = models.ForeignKey(Chromosome)
+	chromosome = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
 	position = models.IntegerField()
 	reference = models.CharField(max_length=1)
 	alteration = models.CharField(max_length=1)
@@ -43,8 +43,8 @@ class Variant(models.Model):
 		(HETEROZYGOTE, '0/1'),
 		(HOMOZYGOTE, '1/1'),
 	)
-	snp = models.ForeignKey(Snp)
-	species = models.ForeignKey(Species)
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	species = models.ForeignKey(Species, on_delete=models.CASCADE)
 	genotype = models.IntegerField(choices=GENOTYPES)
 
 class Gene(models.Model):
@@ -74,7 +74,7 @@ class Gene(models.Model):
 
 class Transcript(models.Model):
 	ensembl_id = models.CharField(max_length=18)
-	parent = models.ForeignKey('Gene')
+	parent = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	protein = models.CharField(max_length=18)
 	start = models.IntegerField()
 	end = models.IntegerField()
@@ -86,21 +86,21 @@ class GeneAnnotation(models.Model):
 	THREE_UTR = 3
 	INTRON = 4
 	FIVE_UTR = 5
- 	FEATURES = (
+	FEATURES = (
 		(INTRON, 'Intron'),
 		(CDS, 'CDS'),
 		(EXON, 'Exon'),
 		(THREE_UTR, "3'UTR"),
 		(FIVE_UTR, "5'UTR")
 	)
-	snp = models.ForeignKey(Snp)
-	from_gene = models.ForeignKey(Gene)
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	from_gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	gene_relative_position = models.IntegerField()
 	gene_feature = models.IntegerField(choices=FEATURES)
 
 class TranscriptAnnotation(models.Model):
-	snp = models.ForeignKey(Snp)
-	from_transcript = models.ForeignKey(Transcript)
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	from_transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE)
 	transcript_relative_position = models.IntegerField()
 	codon = models.CharField(max_length=3)
 	codon_relative_position = models.IntegerField()
