@@ -32,5 +32,6 @@ def index(request):
 
 def snp(request, sid):
 	one = Variant.objects.get(id=int(sid))
-	return render(request, 'snp.html', {'snp': one})
+	genes = one.snp.geneannotation_set.all()
+	return render(request, 'snp.html', {'snp': one, 'genes': genes})
 	

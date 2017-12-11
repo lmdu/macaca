@@ -1,6 +1,55 @@
 {% extends "base.html" %}
 {% block main %}
-<div class="ui segment">
-	MACSNP{{"%02d%02d%08d"|format(snp.snp.chromosome.id,snp.species.id,snp.snp.id)}}
-</div>
+<h2 class="ui header">
+	<a>MACSNP{{"%02d%02d%08d"|format(snp.snp.chromosome.id,snp.species.id,snp.snp.id)}}</a>
+</h2>
+
+<h3 class="ui header">General information</h3>
+<table class="ui definition table">
+	<tr><td>SNP ID</td><td>MACSNP{{"%02d%02d%08d"|format(snp.snp.chromosome.id,snp.species.id,snp.snp.id)}}</td></tr>
+	<tr><td>Species</td><td><i>{{ snp.species.scientific_name }}</i></td></tr>
+	<tr><td>Individual</td><td>{{ snp.species.code }}</td></tr>
+	<tr><td>Group</td><td>{{ snp.species.group }}</td></tr>
+</table>
+
+<h3 class="ui header">Allele information</h3>
+<table class="ui definition table">
+	<tr><td>Genotype</td><td>{{ snp.get_genotype_display() }}</td></tr>
+	<tr><td>5' flanking sequence</td><td><i>{{ snp.snp.five_flank }}</i></td></tr>
+	<tr><td>3' flanking sequence</td><td>{{ snp.snp.three_flank }}</td></tr>
+</table>
+
+<h3 class="ui header">Reference mapping information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Chromosome</th><th>Position</th><th>Reference</th><th>Alteration</th><th>Genotype</th><th>Mutation</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>{{ snp.snp.chromosome.name }}</td>
+			<td>{{ snp.snp.position }}</td>
+			<td>{{ snp.snp.reference }}</td>
+			<td>{{ snp.snp.alteration }}</td>
+			<td>{{ snp.get_genotype_display() }}</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 class="ui header">Gene information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Gene id</th><th>Relative position</th><th>Strand</th><th>Location</th></tr>
+	</thead>
+	<tbody>
+		{% for gene in genes %}
+		<tr>
+			<td>{{ gene.from_gene.ensembl_id }}</td>
+			<td>{{ gene.gene_relative_position }}</td>
+			<td>{{ gene.from_gene.strand }}</td>
+			<td>{{ gene.get_gene_feature_display() }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
 {% endblock %}

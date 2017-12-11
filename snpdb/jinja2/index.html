@@ -90,7 +90,7 @@
 				{{ snps.paginator.num_pages }} Pages
 			</div>
 			<div class="ui right floated pagination menu">
-				{% if snps.has_previous %}
+				{% if snps.has_previous() %}
 				<a class="icon item" href="?page={{ snps.previous_page_number() }}">
 					<i class="left chevron icon"></i>
 				</a>
@@ -112,7 +112,7 @@
 				<a class="item {% if i == snps.number %} active {% endif %}" href="?page={{i}}">{{ i }}</a>
 				{% endfor %}
 
-				{% if snps.has_next %}
+				{% if snps.has_next() %}
 				<a class="icon item" href="?page={{ snps.next_page_number() }}">
 					<i class="right chevron icon"></i>
 				</a>
