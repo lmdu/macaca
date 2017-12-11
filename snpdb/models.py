@@ -27,7 +27,7 @@ class Species(models.Model):
 	mean_coverage = models.FloatField(help_text="Mean coverage")
 
 class Snp(models.Model):
-	chr_id = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
+	chrom = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
 	position = models.IntegerField(help_text="Position in chromosome sequence")
 	reference = models.CharField(max_length=1, help_text="Reference base")
 	alteration = models.CharField(max_length=1, help_text="SNP alteration base")
@@ -39,8 +39,8 @@ class Variant(models.Model):
 		(1, 'Homozygote'),
 		(2, 'Heterozygote')
 	)
-	snp_id = models.ForeignKey(Snp, on_delete=models.CASCADE)
-	species_id = models.ForeignKey(Species, on_delete=models.CASCADE)
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	species = models.ForeignKey(Species, on_delete=models.CASCADE)
 	genotype = models.IntegerField(choices=GENOTYPES, help_text="Alteration genotype")
 
 class Gene(models.Model):
@@ -77,19 +77,19 @@ class Geneannot(models.Model):
 		(3, "3'UTR"),
 		(5, "5'UTR")
 	)
-	snp_id = models.ForeignKey(Snp, on_delete=models.CASCADE)
-	gene_id = models.ForeignKey(Gene, on_delete=models.CASCADE)
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	gene_pos = models.IntegerField(help_text="Relative position in gene")
 	feature = models.IntegerField(choices=FEATURES, help_text="Gene features")
 
 class Transannot(models.Model):
-	snp_id = models.ForeignKey(Snp, on_delete=models.CASCADE)
-	trans_id = models.ForeignKey(Transcript, on_delete=models.CASCADE)
-	trans_pos = models.IntegerField()
-	codon = models.CharField(max_length=3)
-	codon_pos = models.IntegerField()
-	amino_acid = models.CharField(max_length=1)
-	protein_pos = models.IntegerField()
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE)
+	transcript_pos = models.IntegerField(help_text="Relative position in transcript")
+	codon = models.CharField(max_length=3, help_text="SNP site codon")
+	codon_pos = models.IntegerField(help_text="The SNP base position in codon")
+	amino_acid = models.CharField(max_length=1, help_text="The amino acid for SNP codon")
+	protein_pos = models.IntegerField(help_text="Relative position of codon in protein")
 
 class Specific(models.Model):
 	pass

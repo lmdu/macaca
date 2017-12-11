@@ -74,8 +74,8 @@
 		<tbody>
 			{% for snp in snps %}
 			<tr>
-				<td><a href="{{ url('snp', kwargs={'sid':snp.id}) }}">MACSNP{{"%02d%02d%08d"|format(snp.snp.chromosome.id,snp.species.id,snp.snp.id)}}</a></td>
-				<td>{{snp.snp.chromosome.name}}: {{snp.snp.position}}</td>
+				<td><a href="{{ url('snp', kwargs={'sid':snp.id}) }}">MACSNP{{"%02d%02d%08d"|format(snp.snp.chrom.id,snp.species.id,snp.snp.id)}}</a></td>
+				<td>{{snp.snp.chrom.name}}: {{snp.snp.position}}</td>
 				<td>{{snp.species.code}}</td>
 				<td>{{snp.snp.reference}}</td>
 				<td>{{snp.snp.alteration}}</td>

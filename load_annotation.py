@@ -11,7 +11,7 @@ if django.VERSION >= (1, 7):
 data_dir = sys.argv[1]
 
 #load annotation information
-print "load annotation information"
+print("load annotation information")
 from django.db import connection, transaction
 from snpdb.models import Chromosome
 from snpdb.models import Gene
@@ -23,7 +23,7 @@ genes = {g.ensembl_id:g.id for g in Gene.objects.all()}
 transcripts = {t.ensembl_id:t.id for t in Transcript.objects.all()}
 
 with connection.cursor() as c:
-	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")}
+	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chrom_id FROM snpdb_snp")}
 
 gannots = []
 tannots = []
@@ -39,5 +39,5 @@ with transaction.atomic():
 				else:
 					gannots.append((None, int(cols[3]), int(cols[4]), genes[cols[2]], snp))
 
-		c.executemany("INSERT INTO snpdb_geneannotation VALUES (?,?,?,?,?)", gannots)
-		c.executemany("INSERT INTO snpdb_transcriptannotation VALUES (?,?,?,?,?,?,?,?)", tannots)
+		c.executemany("INSERT INTO snpdb_geneannot VALUES (?,?,?,?,?)", gannots)
+		c.executemany("INSERT INTO snpdb_transannot VALUES (?,?,?,?,?,?,?,?)", tannots)

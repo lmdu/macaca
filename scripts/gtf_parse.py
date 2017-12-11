@@ -3,7 +3,7 @@ import sys
 
 class Data(dict):
 	def __getattr__(self, name):
-		return self.get(name, 'N/A')
+		return self.get(name, '')
 
 	def __setattr__(self, name, val):
 		self[name] = val
@@ -41,10 +41,14 @@ if __name__ == '__main__':
 
 	if operator == 'gene':
 		for row in parser:
+			if row.seqid == 'MT':
+				break
 			if row.feature == 'gene':
 				print "\t".join((row.seqid, row.attrs.gene_id, row.attrs.gene_name, row.attrs.gene_biotype, row.start, row.end, row.strand))
 
 	elif operator == 'transcript':
 		for row in parser:
+			if row.seqid == 'MT':
+				break
 			if row.feature == 'transcript':
 				print "\t".join((row.seqid, row.attrs.transcript_id, row.attrs.gene_id, row.start, row.end, row.strand))

@@ -3,15 +3,15 @@
 import os
 import sys
 
+data_dir = sys.argv[1]
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "macaca.settings")
 import django
 if django.VERSION >= (1, 7):
 	django.setup()
 
-data_dir = sys.argv[1]
-
 #load reference genome chromosome information
-print "load reference chromosome information"
+print("load reference chromosome information")
 from snpdb.models import Chromosome
 chromos = []
 chromo_file = os.path.join(data_dir, 'chromosome_table.txt')
@@ -23,7 +23,7 @@ with open(chromo_file) as fh:
 Chromosome.objects.bulk_create(chromos)
 
 #load species information
-print "load species information"
+print("load species information")
 from snpdb.models import Species
 species = []
 species_file = os.path.join(data_dir, 'species_table.txt')
@@ -32,8 +32,8 @@ with open(species_file) as fh:
 		cols = line.strip().split('\t')
 		s = Species(
 			taxonomy = int(cols[0]),
-			scientific_name = cols[2],
-			common_name = cols[3],
+			scientific = cols[2],
+			common = cols[3],
 			group = cols[1],
 			code = cols[5],
 			sample = cols[6],
@@ -41,18 +41,18 @@ with open(species_file) as fh:
 			non_variant = int(cols[7].replace(',','')),
 			heterozygous = int(cols[8].replace(',','')),
 			homozygous = int(cols[9].replace(',','')),
-			total_variant = int(cols[10].replace(',','')),
-			total_useable = int(cols[11].replace(',','')),
+			variants = int(cols[10].replace(',','')),
+			useable = int(cols[11].replace(',','')),
 			heterozygosity = float(cols[12]),
 			snv_rate = float(cols[13]),
-			pcr_duplicates = float(cols[14]),
+			pcr_duplicate = float(cols[14]),
 			mean_coverage = float(cols[15])
 		)
 		species.append(s)
 Species.objects.bulk_create(species)
 
 #load gene information
-print "load reference gene information"
+print("load reference gene information")
 from snpdb.models import Gene
 biotypes = dict(
 	miRNA = 5,
@@ -82,7 +82,7 @@ with open(gene_file) as fh:
 Gene.objects.bulk_create(genes)
 
 #load transcript information
-print "load reference transcript information"
+print("load reference transcript information")
 gene_mapping = {g.ensembl_id: g for g in Gene.objects.all()}
 
 from snpdb.models import Transcript

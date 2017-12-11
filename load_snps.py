@@ -11,7 +11,7 @@ if django.VERSION >= (1, 7):
 data_dir = sys.argv[1]
 
 #load snp site information
-print "load snp site information"
+print("load snp site information")
 from django.db import connection, transaction
 from snpdb.models import Chromosome
 from snpdb.models import Snp
@@ -31,11 +31,11 @@ with transaction.atomic():
 				if progress % 100000 == 0:
 					c.executemany("INSERT INTO snpdb_snp VALUES (?,?,?,?,?,?,?)", snps)
 					snps = []
-					print "SNPs: %s" % progress
+					print("SNPs: %s" % progress)
 		if snps:
 			c.executemany("INSERT INTO snpdb_snp VALUES (?,?,?,?,?,?,?)", snps)
 
-print "SNPs: %s" % progress
+print("SNPs: %s" % progress)
 
 
 '''
