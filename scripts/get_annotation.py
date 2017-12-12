@@ -173,6 +173,25 @@ def get_codon_info(transcript, position):
 
 	return (codon, codon_pos, aa, protein_pos)
 
+codon_table = {
+	'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+	'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+	'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+	'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+	'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+	'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+	'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+	'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+	'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+	'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+	'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+	'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+	'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+	'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+	'TAC':'Y', 'TAT':'Y', 'TAA':'stop_codon', 'TAG':'stop_codon',
+	'TGC':'C', 'TGT':'C', 'TGA':'stop_codon', 'TGG':'W',
+}
+
 feat_types = dict(
 	CDS = 1,
 	exon = 2,
@@ -227,6 +246,18 @@ with open(snp_file) as fh:
 						codon = cols[4][-2:] + cols[2]
 
 					protein_pos = len(protein_seq[transcript_to_protein[locus.transcript]])+1
+
+					alt_codon = list(codon)
+					alt_codon[codon_pos-1] = cols[3]
+					alt_codon = "".join(alt_codon)
+
+					ref_aa = codon_table[codon]
+					alt_aa = codon_table[alt_codon]
+
+					if ref_aa == alt_aa:
+						mutation = 1
+					else:
+						mutation = 0
 
 					record = [cols[0], pos, locus.transcript, tpos, codon, codon_pos, '0', protein_pos]
 

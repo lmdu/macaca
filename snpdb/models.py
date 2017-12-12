@@ -41,7 +41,7 @@ class Variant(models.Model):
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	species = models.ForeignKey(Species, on_delete=models.CASCADE)
-	genotype = models.IntegerField(choices=GENOTYPES, help_text="Alteration genotype")
+	genotype = models.SmallIntegerField(choices=GENOTYPES, help_text="Alteration genotype")
 
 class Gene(models.Model):
 	CODING_TYPES = (
@@ -56,7 +56,7 @@ class Gene(models.Model):
 	ensembl_id = models.CharField(max_length=18, help_text="Ensembl gene id")
 	name = models.CharField(max_length=20, help_text="Gene name")
 	description = models.CharField(max_length=200, help_text="Gene description")
-	biotype = models.IntegerField(choices=CODING_TYPES, help_text="Gene coding types")
+	biotype = models.SmallIntegerField(choices=CODING_TYPES, help_text="Gene coding types")
 	start = models.BigIntegerField(help_text="Gene start position")
 	end = models.BigIntegerField(help_text="Gene end position")
 	strand = models.CharField(max_length=1, help_text="Gene strand")
@@ -80,17 +80,21 @@ class Geneannot(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	gene_pos = models.IntegerField(help_text="Relative position in gene")
-	feature = models.IntegerField(choices=FEATURES, help_text="Gene features")
+	feature = models.SmallIntegerField(choices=FEATURES, help_text="Gene features")
 
 class Transannot(models.Model):
+	MUTATION_TYPES = (
+		(0, 'Non-synonymous'),
+		(1, 'Synonymous'),
+	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE)
 	transcript_pos = models.IntegerField(help_text="Relative position in transcript")
-	codon = models.CharField(max_length=3, help_text="SNP site codon")
+	ref_codon = models.CharField(max_length=3, help_text="SNP site reference codon")
 	codon_pos = models.IntegerField(help_text="The SNP base position in codon")
-	amino_acid = models.CharField(max_length=1, help_text="The amino acid for SNP codon")
+	alt_codon = models.CharField(max_length=3, help_text="Altered SNP site codon")
+	ref_aa = models.CharField(max_length=10, help_text="The reference amino acid for SNP codon")
+	alt_aa = models.CharField(max_length=10, help_text="The alteration amino acid for SNP codon")
 	protein_pos = models.IntegerField(help_text="Relative position of codon in protein")
-
-class Specific(models.Model):
-	pass
-
+	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, help_text="Mutation type")
+	
