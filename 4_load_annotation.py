@@ -35,7 +35,7 @@ with transaction.atomic():
 				cols = line.strip().split('\t')
 				snp = snps[(chromos[cols[0]], int(cols[1]))]
 				if len(cols) > 5:
-					tannots.append((None, int(cols[3]), cols[4], int(cols[5]), cols[6], int(cols[7]), transcripts[cols[2]], snp))
+					tannots.append((None, int(cols[3]), cols[4], int(cols[5]), cols[6], cols[7], cols[8], int(cols[9]), int(cols[10]), snp, transcripts[cols[2]]))
 				else:
 					gannots.append((None, int(cols[3]), int(cols[4]), genes[cols[2]], snp))
 

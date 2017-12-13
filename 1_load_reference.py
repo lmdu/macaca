@@ -22,6 +22,15 @@ with open(chromo_file) as fh:
 		chromos.append(chromo)
 Chromosome.objects.bulk_create(chromos)
 
+#load species group information
+from snpdb.models import Group
+groups = []
+group_file = os.path.join(data_dir, 'group_table.txt')
+with open(group_file) as fh:
+	for line in fh:
+		groups.append(Group(name=line.strip()))
+Group.objects.bulk_create(groups)
+
 #load species information
 print("load species information")
 from snpdb.models import Species
@@ -30,11 +39,12 @@ species_file = os.path.join(data_dir, 'species_table.txt')
 with open(species_file) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
+
 		s = Species(
 			taxonomy = int(cols[0]),
 			scientific = cols[2],
 			common = cols[3],
-			group = cols[1],
+			group = Group(name=cols[1]),
 			code = cols[5],
 			sample = cols[6],
 			location = cols[4],

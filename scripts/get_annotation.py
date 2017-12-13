@@ -5,6 +5,10 @@ import math
 import pyfaidx
 import intersection
 
+from Bio.Seq import Seq
+
+ref_dir, data_dir = sys.argv[1:]
+
 class Data(dict):
 	def __getattr__(self, name):
 		return self.get(name, 'N/A')
@@ -37,8 +41,6 @@ def gtf_parser(annot_file):
 				record.attrs[name.strip()] = value
 			
 			yield record
-
-ref_dir, data_dir = sys.argv[1:]
 
 gtf_file = os.path.join(ref_dir, 'Macaca_mulatta.MMUL_1.85.gtf')
 cds_file = os.path.join(ref_dir, 'Macaca_mulatta.MMUL_1.85.cds.fa')
@@ -99,6 +101,7 @@ for row in gtf_parser(gtf_file):
 		feat_tree[row.attrs.gene_id].insert(row.start, row.end, Data(
 			start = row.start,
 			end = row.end,
+			strand = row.strand,
 			feature = row.feature,
 			transcript = row.attrs.transcript_id
 		))
@@ -173,24 +176,11 @@ def get_codon_info(transcript, position):
 
 	return (codon, codon_pos, aa, protein_pos)
 
-codon_table = {
-	'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
-	'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
-	'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
-	'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
-	'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
-	'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
-	'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
-	'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
-	'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
-	'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
-	'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
-	'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
-	'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
-	'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
-	'TAC':'Y', 'TAT':'Y', 'TAA':'stop_codon', 'TAG':'stop_codon',
-	'TGC':'C', 'TGT':'C', 'TGA':'stop_codon', 'TGG':'W',
-}
+def reverse_complement(codon):
+	bases = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}
+	codon_list = list(codon)
+	codon_list.reverse()
+	return "".join([bases[b] for b in codon_list])
 
 feat_types = dict(
 	CDS = 1,
@@ -224,8 +214,25 @@ with open(snp_file) as fh:
 					locations.append(locus.feature)
 
 					tpos = calc_trasncript_relative_position(locus.transcript, pos)
-					record = [cols[0], pos, locus.transcript, tpos]
-					record.extend(get_codon_info(locus.transcript, pos))
+					
+					ref_codon, codon_pos, ref_aa, protein_pos = get_codon_info(locus.transcript, pos)
+
+					alt_codon = list(ref_codon)
+					alt_codon[codon_pos-1] = cols[3]
+					alt_codon = "".join(alt_codon)
+
+					if ref_aa != Seq(ref_codon).translate():
+						raise Exception("CDS codon error")
+
+
+					alt_aa = Seq(alt_codon).translate(stop_symbol='stop_codon')
+
+					if ref_aa == alt_aa:
+						mutation = 1
+					else:
+						mutation = 0
+					
+					record = [cols[0], pos, locus.transcript, tpos, ref_codon, codon_pos, alt_codon, ref_aa, alt_aa, protein_pos, mutation]
 
 					print "\t".join(map(str,record))
 
@@ -245,21 +252,30 @@ with open(snp_file) as fh:
 					elif codon_pos == 3:
 						codon = cols[4][-2:] + cols[2]
 
+					if strand == '-':
+						codon = reverse_complement(codon)
+
 					protein_pos = len(protein_seq[transcript_to_protein[locus.transcript]])+1
 
 					alt_codon = list(codon)
 					alt_codon[codon_pos-1] = cols[3]
 					alt_codon = "".join(alt_codon)
 
-					ref_aa = codon_table[codon]
-					alt_aa = codon_table[alt_codon]
+					ref_aa = Seq(codon).translate(stop_symbol='stop_codon')
+					alt_aa = Seq(alt_codon).translate(stop_symbol='stop_codon')
+
+					#print pos, codon_pos, codon, alt_codon, ref_aa, alt_aa
+
+					if ref_aa != 'stop_codon':
+						#print pos, locus.start, locus.end, locus.strand, ref_aa, codon
+						raise Exception("Error stop codon")
 
 					if ref_aa == alt_aa:
 						mutation = 1
 					else:
 						mutation = 0
 
-					record = [cols[0], pos, locus.transcript, tpos, codon, codon_pos, '0', protein_pos]
+					record = [cols[0], pos, locus.transcript, tpos, codon, codon_pos, alt_codon, ref_aa, alt_aa, protein_pos, mutation]
 
 					print "\t".join(map(str, record))
 

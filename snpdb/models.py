@@ -8,11 +8,17 @@ class Chromosome(models.Model):
 	name = models.CharField(max_length=10, help_text="Chromosome name, chr1-chr20")
 	size = models.BigIntegerField(help_text = "Chromosome sequence length")
 
+class Group(models.Model):
+	name = models.CharField(max_length=15, help_text="Group name that species belongs to")
+
 class Species(models.Model):
 	taxonomy = models.IntegerField(help_text="NCBI taxonomy number")
 	scientific = models.CharField(max_length=50, help_text="Scientific name")
 	common = models.CharField(max_length=50, help_text="Common name")
-	group = models.CharField(max_length=15, help_text="Group that species belongs to")
+	group = models.ForeignKey(Group, on_delete=models.CASCADE, help_text="Species group information")
+
+class Individual(models.Model):
+	species = models.ForeignKey(Species, on_delete=models.CASCADE, help_text="Species information")
 	code = models.CharField(max_length=5,help_text="Custom code number for species")
 	sample = models.CharField(max_length=20, help_text="sample seria number")
 	location = models.CharField(max_length=100, help_text="Where the sample collected")
@@ -25,10 +31,11 @@ class Species(models.Model):
 	snv_rate = models.FloatField(help_text="SNV rate")
 	pcr_duplicate = models.FloatField(help_text="PCR duplicates (%)")
 	mean_coverage = models.FloatField(help_text="Mean coverage")
+	
 
 class Snp(models.Model):
 	chrom = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
-	position = models.IntegerField(help_text="Position in chromosome sequence")
+	position = models.BigIntegerField(help_text="Position in chromosome sequence")
 	reference = models.CharField(max_length=1, help_text="Reference base")
 	alteration = models.CharField(max_length=1, help_text="SNP alteration base")
 	five = models.CharField(max_length=50, help_text="Five flanking sequence 50 bp")
@@ -40,7 +47,7 @@ class Variant(models.Model):
 		(2, 'Heterozygote')
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
-	species = models.ForeignKey(Species, on_delete=models.CASCADE)
+	individual = models.ForeignKey(Individual, on_delete=models.CASCADE)
 	genotype = models.SmallIntegerField(choices=GENOTYPES, help_text="Alteration genotype")
 
 class Gene(models.Model):
@@ -69,12 +76,12 @@ class Transcript(models.Model):
 	end = models.IntegerField(help_text="Transcript end position")
 	strand = models.CharField(max_length=1, help_text="Transcript strand")
 
-class Geneannot(models.Model):
+class GeneAnnot(models.Model):
 	FEATURES = (
-		(4, 'Intron'),
 		(1, 'CDS'),
 		(2, 'Exon'),
 		(3, "3'UTR"),
+		(4, 'Intron'),
 		(5, "5'UTR")
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
@@ -82,7 +89,7 @@ class Geneannot(models.Model):
 	gene_pos = models.IntegerField(help_text="Relative position in gene")
 	feature = models.SmallIntegerField(choices=FEATURES, help_text="Gene features")
 
-class Transannot(models.Model):
+class TransAnnot(models.Model):
 	MUTATION_TYPES = (
 		(0, 'Non-synonymous'),
 		(1, 'Synonymous'),
@@ -97,4 +104,31 @@ class Transannot(models.Model):
 	alt_aa = models.CharField(max_length=10, help_text="The alteration amino acid for SNP codon")
 	protein_pos = models.IntegerField(help_text="Relative position of codon in protein")
 	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, help_text="Mutation type")
+
+class Function(models.Model):
+	FUNC_TYPES = (
+		(1, 'GO'),
+		(2, 'KEGG'),
+		(3, 'Pfam'),
+		(4, 'InterPro')
+	)
+	CATEGORIES = (
+		(0, '')
+		(1, 'molecular function')
+		(2, 'cellular component')
+		(3, 'biological process')
+	)
+	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
+	funcdb = models.SmallIntegerField(choices=FUNC_TYPES, help_text="The function database name")
+	accession = models.CharField(max_length=10, help_text="Functional database accession id")
+	descript = models.CharField(max_length=200, help_text="Function description")
+	category = models.SmallIntegerField(choices=CATEGORIES, help_text="Function category")
+
+class GroupSpec(models.Model):
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	group = models.ForeignKey(Group, on_delete=models.CASCADE)
+
+class SpecieSpec(models.Model):
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	species = models.ForeignKey(Species, on_delete=models.CASCADE)
 	
