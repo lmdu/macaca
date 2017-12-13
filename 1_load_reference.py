@@ -23,6 +23,7 @@ with open(chromo_file) as fh:
 Chromosome.objects.bulk_create(chromos)
 
 #load species group information
+print("load species group information")
 from snpdb.models import Group
 groups = []
 group_file = os.path.join(data_dir, 'group_table.txt')
@@ -35,16 +36,30 @@ Group.objects.bulk_create(groups)
 print("load species information")
 from snpdb.models import Species
 species = []
-species_file = os.path.join(data_dir, 'species_table.txt')
+species_file = os.path.join(data_dir, 'species_table')
 with open(species_file) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
-
 		s = Species(
 			taxonomy = int(cols[0]),
 			scientific = cols[2],
 			common = cols[3],
-			group = Group(name=cols[1]),
+			group = Group(name=cols[1])
+		)
+		species.append(s)
+Species.objects.bulk_create(species)
+
+#load individual information
+print("load species information")
+from snpdb.models import Individual
+samples = []
+samples_file = os.path.join(data_dir, 'sample_table.txt')
+with open(samples_file) as fh:
+	for line in fh:
+		cols = line.strip().split('\t')
+
+		s = Individual(
+			species = Species(taxonomy=int(cols[0])),
 			code = cols[5],
 			sample = cols[6],
 			location = cols[4],
@@ -58,8 +73,8 @@ with open(species_file) as fh:
 			pcr_duplicate = float(cols[14]),
 			mean_coverage = float(cols[15])
 		)
-		species.append(s)
-Species.objects.bulk_create(species)
+		samples.append(s)
+Individual.objects.bulk_create(samples)
 
 #load gene information
 print("load reference gene information")

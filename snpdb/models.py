@@ -112,17 +112,11 @@ class Function(models.Model):
 		(3, 'Pfam'),
 		(4, 'InterPro')
 	)
-	CATEGORIES = (
-		(0, '')
-		(1, 'molecular function')
-		(2, 'cellular component')
-		(3, 'biological process')
-	)
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	funcdb = models.SmallIntegerField(choices=FUNC_TYPES, help_text="The function database name")
 	accession = models.CharField(max_length=10, help_text="Functional database accession id")
 	descript = models.CharField(max_length=200, help_text="Function description")
-	category = models.SmallIntegerField(choices=CATEGORIES, help_text="Function category")
+	supplement = models.CharField(max_length=10, help_text="Other information")
 
 class GroupSpec(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)

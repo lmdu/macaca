@@ -44,10 +44,10 @@ with transaction.atomic():
 
 				progress += 1
 				if progress % 10000 == 0:
-					c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, species_id) VALUES (?,?,?)", variants)
+					c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, individual_id) VALUES (?,?,?)", variants)
 					variants = []
 					print("Variants: %s" % progress)
 
 		if variants:
-			c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, species_id) VALUES (?,?,?)", variants)
+			c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, individual_id) VALUES (?,?,?)", variants)
 		print("Variants: %s" % progress)
