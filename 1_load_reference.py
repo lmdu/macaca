@@ -32,11 +32,13 @@ with open(group_file) as fh:
 		groups.append(Group(name=line.strip()))
 Group.objects.bulk_create(groups)
 
+groups = {g.name: g for g in Group.objects.all()}
+
 #load species information
 print("load species information")
 from snpdb.models import Species
 species = []
-species_file = os.path.join(data_dir, 'species_table')
+species_file = os.path.join(data_dir, 'species_table.txt')
 with open(species_file) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
@@ -44,13 +46,15 @@ with open(species_file) as fh:
 			taxonomy = int(cols[0]),
 			scientific = cols[2],
 			common = cols[3],
-			group = Group(name=cols[1])
+			group = groups[cols[1]]
 		)
 		species.append(s)
 Species.objects.bulk_create(species)
 
+species = {s.taxonomy: s for s in Species.objects.all()}
+
 #load individual information
-print("load species information")
+print("load individual information")
 from snpdb.models import Individual
 samples = []
 samples_file = os.path.join(data_dir, 'sample_table.txt')
@@ -59,7 +63,7 @@ with open(samples_file) as fh:
 		cols = line.strip().split('\t')
 
 		s = Individual(
-			species = Species(taxonomy=int(cols[0])),
+			species = species[int(cols[0])],
 			code = cols[5],
 			sample = cols[6],
 			location = cols[4],

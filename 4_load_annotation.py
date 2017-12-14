@@ -40,7 +40,7 @@ with transaction.atomic():
 					gannots.append((None, int(cols[3]), int(cols[4]), genes[cols[2]], snp))
 
 		c.executemany("INSERT INTO snpdb_geneannot VALUES (?,?,?,?,?)", gannots)
-		c.executemany("INSERT INTO snpdb_transannot VALUES (?,?,?,?,?,?,?,?)", tannots)
+		c.executemany("INSERT INTO snpdb_transannot VALUES (?,?,?,?,?,?,?,?,?,?,?)", tannots)
 
 #load genes
 from snpdb.models import Gene
@@ -75,6 +75,10 @@ with open(go_file) as fh:
 		cols = line.strip('\n').split('\t')
 		if not cols[1]:
 			continue
+
+		if cols[0] not in gene_mapping:
+			continue
+
 		a = Funcannot(
 			gene = gene_mapping[cols[0]],
 			function = GOS[cols[1]]
@@ -105,6 +109,10 @@ annots = []
 with open(kegg_file) as fh:
 	for line in fh:
 		cols = line.strip('\n').split('\t')
+
+		if cols[0] not in gene_mapping:
+			continue
+
 		a = Funcannot(
 			gene = gene_mapping[cols[0]],
 			function = KEGGS[cols[1]]
@@ -139,6 +147,9 @@ with open(ipro_file) as fh:
 	for line in fh:
 		cols = line.strip('\n').split('\t')
 		if not cols[1]:
+			continue
+
+		if cols[0] not in gene_mapping:
 			continue
 
 		a = Funcannot(
@@ -176,7 +187,10 @@ with open(pfam_file) as fh:
 		cols = line.strip('\n').split('\t')
 		if not cols[1]:
 			continue
-			
+		
+		if cols[0] not in gene_mapping:
+			continue
+
 		a = Funcannot(
 			gene = gene_mapping[cols[0]],
 			function = PFAMS[cols[1]]

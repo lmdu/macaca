@@ -7,5 +7,6 @@ from . import views
 
 urlpatterns = [
 	url(r'^$', views.index),
-	url(r'^snp/(?P<sid>[0-9]+)/$', views.snp, name="snp")
+	url(r'^variants/$', views.variants, name='variants'),
+	url(r'^snp/(?P<sid>[0-9]+)/$', views.snp, name='snp')
 ]

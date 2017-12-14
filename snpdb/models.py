@@ -31,7 +31,6 @@ class Individual(models.Model):
 	snv_rate = models.FloatField(help_text="SNV rate")
 	pcr_duplicate = models.FloatField(help_text="PCR duplicates (%)")
 	mean_coverage = models.FloatField(help_text="Mean coverage")
-	
 
 class Snp(models.Model):
 	chrom = models.ForeignKey(Chromosome, on_delete=models.CASCADE)

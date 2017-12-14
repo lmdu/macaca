@@ -16,12 +16,12 @@ from django.db import connection, transaction
 from snpdb.models import Chromosome
 from snpdb.models import Snp
 from snpdb.models import Variant
-from snpdb.models import Species
+from snpdb.models import Individual
 genotype_file = os.path.join(data_dir, 'genotype_table.txt')
 
 chromos = {c.name:c.id for c in Chromosome.objects.all()}
 genotypes = {'1/1': 1, '0/1': 2}
-species = {s.code: s.id for s in Species.objects.all()}
+species = {s.code: s.id for s in Individual.objects.all()}
 
 with connection.cursor() as c:
 	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chrom_id FROM snpdb_snp")}
