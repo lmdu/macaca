@@ -112,11 +112,14 @@ class Function(models.Model):
 		(3, 'Pfam'),
 		(4, 'InterPro')
 	)
-	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
-	funcdb = models.SmallIntegerField(choices=FUNC_TYPES, help_text="The function database name")
+	source = models.SmallIntegerField(choices=FUNC_TYPES, help_text="The function source database name")
 	accession = models.CharField(max_length=10, help_text="Functional database accession id")
 	descript = models.CharField(max_length=200, help_text="Function description")
-	supplement = models.CharField(max_length=10, help_text="Other information")
+	supplement = models.CharField(max_length=80, help_text="Other information")
+
+class Funcannot(models.Model):
+	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
+	function = models.ForeignKey(Function, on_delete=models.CASCADE)
 
 class GroupSpec(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)

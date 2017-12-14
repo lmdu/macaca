@@ -113,7 +113,7 @@ gene_mapping = {g.ensembl_id: g for g in Gene.objects.all()}
 from snpdb.models import Transcript
 transcripts = []
 transcript_file = os.path.join(data_dir, 'transcript_table.txt')
-with open(transcript_file) as  fh:
+with open(transcript_file) as fh:
 	for line in fh:
 		cols = line.strip('\n').split('\t')
 		transcript = Transcript(
@@ -126,3 +126,4 @@ with open(transcript_file) as  fh:
 		)
 		transcripts.append(transcript)
 Transcript.objects.bulk_create(transcripts)
+

@@ -41,3 +41,148 @@ with transaction.atomic():
 
 		c.executemany("INSERT INTO snpdb_geneannot VALUES (?,?,?,?,?)", gannots)
 		c.executemany("INSERT INTO snpdb_transannot VALUES (?,?,?,?,?,?,?,?)", tannots)
+
+#load genes
+from snpdb.models import Gene
+gene_mapping = {g.ensembl_id: g for g in Gene.objects.all()}
+
+print("load go term information")
+go_file = os.path.join(data_dir, 'goterm_table.txt')
+from snpdb.models import Function
+GOS = {}
+with open(go_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if not cols[1]:
+			continue
+
+		if cols[1] not in GOS:
+			go = Function(
+				source = 1,
+				accession = cols[1],
+				descript = cols[2],
+				supplement = cols[3]
+			)
+			GOS[cols[1]] = go
+Function.objects.bulk_create(GOS.values())
+
+GOS = {go.accession: go for go in Function.objects.filter(source=1)}
+
+from snpdb.models import Funcannot
+annots = []
+with open(go_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if not cols[1]:
+			continue
+		a = Funcannot(
+			gene = gene_mapping[cols[0]],
+			function = GOS[cols[1]]
+		)
+		annots.append(a)
+Funcannot.objects.bulk_create(annots)
+del GOS
+
+print("load kegg pathway information")
+kegg_file = os.path.join(data_dir, 'kegg_table.txt')
+KEGGS = {}
+with open(kegg_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if cols[1] not in KEGGS:
+			kegg = Function(
+				source = 2,
+				accession = cols[1],
+				descript = cols[2],
+				supplement = cols[3]
+			)
+			KEGGS[cols[1]] = kegg
+Function.objects.bulk_create(KEGGS.values())
+
+KEGGS = {kegg.accession: kegg for kegg in Function.objects.filter(source=2)}
+
+annots = []
+with open(kegg_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		a = Funcannot(
+			gene = gene_mapping[cols[0]],
+			function = KEGGS[cols[1]]
+		)
+		annots.append(a)
+Funcannot.objects.bulk_create(annots)
+del KEGGS
+
+print("load interpro information")
+ipro_file = os.path.join(data_dir, 'interpro_table.txt')
+IPROS = {}
+with open(ipro_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if not cols[1]:
+			continue
+
+		if cols[1] not in IPROS:
+			ipro = Function(
+				source = 3,
+				accession = cols[1],
+				descript = cols[2],
+				supplement = ''
+			)
+			IPROS[cols[1]] = ipro
+Function.objects.bulk_create(IPROS.values())
+
+IPROS = {ipro.accession: ipro for ipro in Function.objects.filter(source=3)}
+
+annots = []
+with open(ipro_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if not cols[1]:
+			continue
+
+		a = Funcannot(
+			gene = gene_mapping[cols[0]],
+			function = IPROS[cols[1]]
+		)
+		annots.append(a)
+Funcannot.objects.bulk_create(annots)
+del IPROS
+
+print("load pfam information")
+pfam_file = os.path.join(data_dir, 'pfam_table.txt')
+PFAMS = {}
+with open(pfam_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if not cols[1]:
+			continue
+
+		if cols[1] not in PFAMS:
+			pfam = Function(
+				source = 4,
+				accession = cols[1],
+				descript = cols[2],
+				supplement = ''
+			)
+			PFAMS[cols[1]] = pfam
+Function.objects.bulk_create(PFAMS.values())
+
+PFAMS = {pfam.accession: pfam for pfam in Function.objects.filter(source=4)}
+
+annots = []
+with open(pfam_file) as fh:
+	for line in fh:
+		cols = line.strip('\n').split('\t')
+		if not cols[1]:
+			continue
+			
+		a = Funcannot(
+			gene = gene_mapping[cols[0]],
+			function = PFAMS[cols[1]]
+		)
+		annots.append(a)
+Funcannot.objects.bulk_create(annots)
+del PFAMS
+
+
