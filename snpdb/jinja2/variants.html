@@ -1,45 +1,62 @@
+{% set urlname="variants" %}
 {% extends "base.html" %}
 {% block main %}
 <div class="ui segment">
 	<div class="ui chromosome circular labels">
 		Chromo:
-		<a class="ui label {% if paras['chrom']==0 %} brown {% endif %}" data-num="0">All</a>
+		<a class="ui label {% if paras.chromosome==0 %} orange {% endif %}" data-num="0">All</a>
 		{% for c in chromos %}
-		<a class="ui label {% if paras['chrom']==c.id %} brown {% endif %}" data-num="{{c.id}}">{{c.name}}</a>
+		<a class="ui label {% if paras.chromosome==c.id %} orange {% endif %}" data-num="{{c.id}}">{{c.name}}</a>
 		{% endfor %}
 	</div>
 
 	<div class="ui individual circular labels">
 		Macaca:
-		<a class="ui label {% if paras['indiv']==0 %} brown {% endif %}" data-num="0">All</a>
+		<a class="ui label {% if paras.sample==0 %} orange {% endif %}" data-num="0">All</a>
 		{% for s in species %}
-		<a class="ui label {% if paras['indiv']==s.id %} brown {% endif %}" data-num="{{s.id}}">{{s.code}}</a>
+		<a class="ui label {% if paras.sample==s.id %} orange {% endif %}" data-num="{{s.id}}">{{s.code}}</a>
 		{% endfor %}
 	</div>
 
-	{% set features=["All", "CDS", "3'UTR", "5'UTR", "Exon", "Intron", "Synonymous", "Non-synonymous"] %}
+	{% set features=["All", "CDS", "exon", "3'UTR", "intron", "5'UTR"] %}
+	{% set genotypes = ["All", "homozygote", "	heterozygote"] %}
+	{% set mutations = ["All", "non-synonymous", "synonymous"] %}
 
-	<div class="ui feature circular labels">
+	<div class="ui circular labels">
 		Feature:
 		{% for f in features %}
-		<a class="ui label {% if paras['feat']==loop.index0 %} brown {% endif %}" data-num="{{loop.index0}}">{{ f }}</a>
+		<a class="ui features label {% if paras.feature==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ f }}</a>
 		{% endfor %}
+
+		Genotype:
+		{% for t in genotypes %}
+		<a class="ui genotypes label {% if paras.genotype==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ t }}</a>
+		{% endfor %}
+
+		Mutation:
+		{% for m in mutations %}
+		<a class="ui mutations label {% if paras.mutation==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ m }}</a>
+		{% endfor %}
+
+
 	</div>
 </div>
 
 <div class="ui grid">
 	<div class="eight wide column">
 		<form action="{{ url('variants') }}" method="get" id="snps-filter">
-			<input type="hidden" id="page" name="page" value="{{ paras['page'] }}">
-			<input type="hidden" id="chromosome" name="chr" value="{{ paras['chrom'] }}">
-			<input type="hidden" id="individual" name="indiv" value="{{ paras['indiv'] }}">
-			<input type="hidden" id="feature" name="feat" value="{{ paras['feat'] }}">
+			<input type="hidden" id="page" name="page" value="{{ paras.page }}">
+			<input type="hidden" id="chromosome" name="chr" value="{{ paras.chromosome }}">
+			<input type="hidden" id="individual" name="sample" value="{{ paras.sample }}">
+			<input type="hidden" id="feature" name="feature" value="{{ paras.feature }}">
+			<input type="hidden" id="genotype" name="genotype" value="{{ paras.genotype }}">
+			<input type="hidden" id="mutation" name="mutation" value="{{ paras.mutation }}">
 		
 			Show
-			<select name="per" class="ui numperpage compact selection dropdown">
+			<select name="records" class="ui numperpage compact selection dropdown">
 				{% set pages=[10, 25, 50, 100] %}
 				{% for v in pages %}
-				<option value="{{v}}" {% if paras['per']==v %} selected="selected" {% endif %}>{{v}}</option>
+				<option value="{{v}}" {% if paras.records==v %} selected="selected" {% endif %}>{{v}}</option>
 				{% endfor %}
 			</select>
 			entries
@@ -47,17 +64,9 @@
 	</div>
 
 	<div class="right aligned eight wide column">
-		<div class="ui basic segment">
-			<div class="ui two horizontal statistic">
-				<div class="statistic">
-					<div class="value">{{ snps.paginator.count }}</div>
-					<div class="label">SNPs</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{ snps.paginator.num_pages }}</div>
-					<div class="label">Pages</div>
-				</div>
-			</div>
+		<div class="ui basic result segment">
+			<span>{{ snps.paginator.count }} SNPs</span>
+			<span>{{ snps.number }} of {{ snps.paginator.num_pages }} Pages</span>
 		</div>
 	</div>
 </div>
@@ -81,7 +90,13 @@
 			<td>{{snp.individual.code}}</td>
 			<td>{{snp.snp.reference}}</td>
 			<td>{{snp.snp.alteration}}</td>
-			<td>{{snp.get_genotype_display()}}</td>
+			<td>
+				{% if snp.genotype == 1 %}
+				<span class="genotype homo">homozygote</span>
+				{% else %}
+				<span class="genotype hetero">heterozygote</span>
+				{% endif %}
+			</td>
 		</tr>
 		{% endfor %}
 	</tbody>
@@ -99,15 +114,13 @@
 			<a class="item" data-num="{{snps.number-i}}">{{snps.number-i}}</a>
 			{% endif %}
 			{% endfor %}
+			
 			<a class="item active" data-num="{{snps.number}}">{{snps.number}}</a>
+			
 			{% for i in range(1, 4) %}
 			{% if snps.number + i <= snps.paginator.num_pages %}
 			<a class="item" data-num="{{snps.number+i}}">{{snps.number+i}}</a>
 			{% endif %}
-			{% endfor %}
-
-			{% for i in page_range %}
-			<a class="item {% if i == snps.number %} active {% endif %}" data-num="{{i}}">{{ i }}</a>
 			{% endfor %}
 
 			{% if snps.has_next() %}

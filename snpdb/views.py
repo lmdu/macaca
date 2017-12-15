@@ -12,32 +12,45 @@ from .models import Chromosome
 def index(request):
 	pass
 
+def organism(request):
+	pass
+
+def group(request):
+	pass
+
 def variants(request):
 	chromos = Chromosome.objects.all()[:20]
 	species = Individual.objects.all()
 
 	paras = dict(
 		page = int(request.GET.get('page', 1)),
-		per = int(request.GET.get('per', 10)),
-		chrom = int(request.GET.get('chr', 0)),
-		indiv = int(request.GET.get('indiv', 0)),
-		feat = int(request.GET.get('feat', 0))
+		records = int(request.GET.get('records', 10)),
+		chromosome = int(request.GET.get('chr', 0)),
+		sample = int(request.GET.get('sample', 0)),
+		feature = int(request.GET.get('feature', 0)),
+		genotype = int(request.GET.get('genotype', 0)),
+		mutation = int(request.GET.get('mutation', 0))
 	)
 
-	snps = Variant.objects
-	if paras['indiv']:
-		snps = snps.filter(individual=paras['indiv'])
+	snps = Variant.objects.all()
 
-	if paras['feat']:
-		snps = snps.filter(snp__geneannot__feature=paras['feat'])
+	if paras['sample']:
+		snps = snps.filter(individual=paras['sample'])
 
-	if paras['chrom']:
-		snps = snps.filter(snp__chrom=paras['chrom'])
+	if paras['genotype']:
+		snps = snps.filter(genotype=paras['genotype'])
+
+	if paras['mutation']:
+		snps = snps.filter(snp__transannot__synonymous=paras['mutation'])
+
+	if paras['feature']:
+		snps = snps.filter(snp__geneannot__feature=paras['feature'])
+
+	if paras['chromosome']:
+		snps = snps.filter(snp__chrom=paras['chromosome'])
 
 
-	
-
-	paginator = Paginator(snps, paras['per'])
+	paginator = Paginator(snps, paras['records'])
 
 	try:
 		snps = paginator.page(paras['page'])
@@ -58,5 +71,10 @@ def variants(request):
 def snp(request, sid):
 	one = Variant.objects.get(id=int(sid))
 	genes = one.snp.geneannot_set.all()
-	return render(request, 'snp.html', {'snp': one, 'genes': genes})
+	transcripts = one.snp.transannot_set.all()
+	return render(request, 'snp.html', {
+		'snp': one,
+		'genes': genes,
+		'transcripts': transcripts
+	})
 	

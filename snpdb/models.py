@@ -90,8 +90,8 @@ class GeneAnnot(models.Model):
 
 class TransAnnot(models.Model):
 	MUTATION_TYPES = (
-		(0, 'Non-synonymous'),
-		(1, 'Synonymous'),
+		(1, 'Non-synonymous'),
+		(2, 'Synonymous'),
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	transcript = models.ForeignKey(Transcript, on_delete=models.CASCADE)

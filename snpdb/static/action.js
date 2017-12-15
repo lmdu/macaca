@@ -19,9 +19,26 @@ $('.ui.individual a').click(function(e){
 });
 
 //set feature link
-$('.ui.feature a').click(function(e){
+$('.ui.features').click(function(e){
 	e.preventDefault();
 	$('#feature').val($(this).data('num'));
+	$('#page').val('1');
+	$('#snps-filter').submit();
+});
+
+//set genotype link
+$('.ui.genotypes').click(function(e){
+	e.preventDefault();
+	$('#genotype').val($(this).data('num'));
+	$('#page').val('1');
+	$('#snps-filter').submit();
+});
+
+//set mutation link
+$('.ui.mutations').click(function(e){
+	e.preventDefault();
+	$('#mutation').val($(this).data('num'));
+	$('#feature').val('1');
 	$('#page').val('1');
 	$('#snps-filter').submit();
 });

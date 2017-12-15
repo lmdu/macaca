@@ -17,10 +17,10 @@
 				<img src="{{ static('images/logo.png') }}" width="90" height="90">
 			</div>
 			<a class="item" href="#">Home</a>
-			<a class="item" href="">Browse</a>
-			<a class="item" href="">Species</a>
-			<a class="item" href="#">Version</a>
-			<a class="item" href="#">Help</a>
+			<a class="item {% if urlname=='variants' %} active {% endif %}" href="{{ url('variants') }}">Browse</a>
+			<a class="item" href="">Organism</a>
+			<a class="item" href="#">Group</a>
+			<a class="item" href="">Help</a>
 			<div class="right menu">
 				<div class="item">
 					<div class="ui icon input">
