@@ -14,19 +14,31 @@
 	<div class="ui brown inverted secondary huge menu">
 		<div class="ui container">
 			<div class="header">
-				<img src="{{ static('images/logo.png') }}" width="90" height="90">
+				<img src="{{ static('images/logo.png') }}" width="100" height="83">
 			</div>
-			<a class="item" href="#">Home</a>
-			<a class="item {% if urlname=='variants' %} active {% endif %}" href="{{ url('variants') }}">Browse</a>
-			<a class="item" href="">Organism</a>
-			<a class="item" href="#">Group</a>
+			<a class="item {% if urlname=='home' %} active {% endif %}" href="{{ url('home') }}">Home</a>
+			<a class="item {% if urlname=='variants' %} active {% endif %}" href="{{ url('variants') }}">Variants</a>
+			<a class="item {% if urlname=='organism' %} active {% endif %}" href="{{ url('organism') }}" href="">Organism</a>
+			<a class="item" href="#">Specific SNPs</a>
 			<a class="item" href="">Help</a>
 			<div class="right menu">
 				<div class="item">
-					<div class="ui icon input">
-						<input type="text" placeholder="chr19:56897-57988">
-						<i class="search link icon"></i>
+					<form method="get" id="search" action="{{url('search')}}">
+						<div class="ui icon input">
+							<input type="text" id="search-input" name="search" placeholder="chr19:56897-57988">
+							<i class="search link icon"></i>
+						</div>
+					</form>
+
+					<div class="ui small modal">
+						<div class="header">Warning Message</div>
+						<div class="content">
+							<p>Your input can not be empty, the input can be</p>
+							<p>1. chromosome id with position range like <strong>chr10:17689-18456</strong></p>
+							<p>2. a SNP id like <strong>MACSNP201900001698</strong></p>
+						</div>
 					</div>
+
 				</div>
 			</div>
 		</div>
@@ -73,7 +85,7 @@
         </div>
       </div>
       <div class="ui inverted section divider"></div>
-      <img src="assets/images/logo.png" class="ui centered mini image">
+      <!--<img src="assets/images/logo.png" class="ui centered mini image">-->
       <div class="ui horizontal inverted small divided link list">
         <a class="item" href="#">Site Map</a>
         <a class="item" href="#">Contact Us</a>

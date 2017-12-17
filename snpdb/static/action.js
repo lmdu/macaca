@@ -54,6 +54,21 @@ $('.ui.numperpage').change(function(){
 	$('#snps-filter').submit();
 });
 
+//start search SNPs
+$('i.search.icon').click(function(){
+	var tag = $('#search-input').val();
+	var chrange = /^chr\d{1,2}:\d+\-\d+$/
+	var snpid = /MACSNP\d{12}/
+	if(chrange.test(tag) || snpid.test(tag)){
+		$('#search').submit();
+	}else{
+		$('.ui.small.modal').modal('show');
+	}
+
+	
+	
+});
+
 
 });
 

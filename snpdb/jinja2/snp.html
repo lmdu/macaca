@@ -85,10 +85,10 @@
 	<tbody>
 		{% for transcript in transcripts %}
 		<tr>
-			<td>{{ transcript.transcript.ensembl_id }}</td>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/geneview?gene={{ transcript.transcript.ensembl_id }}">{{ transcript.transcript.ensembl_id }}</a></td>
 			<td>{{ transcript.transcript_pos }}</td>
 			<td>{{ transcript.ref_codon|format_codon(transcript.codon_pos)|safe }} -> {{ transcript.alt_codon|format_codon(transcript.codon_pos)|safe }}</td>
-			<td>{{ transcript.transcript.protein }}</td>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/geneview?gene={{ transcript.transcript.protein }}">{{ transcript.transcript.protein }}</a></td>
 			<td>{{ transcript.protein_pos }}</td>
 			<td>{{ transcript.ref_aa }} -> {{ transcript.alt_aa }}</td>
 			<td>{{ transcript.get_synonymous_display() }}</td>
@@ -111,7 +111,7 @@
 	<tbody>
 		{% for go in gene.gene.funcannot_set.filter(function__source=1) %}
 		<tr>
-			<td>{{ go.function.accession }}</td>
+			<td><a href="http://amigo.geneontology.org/amigo/term/{{ go.function.accession }}">{{ go.function.accession }}</a></td>
 			<td>{{ go.function.descript }}</td>
 			<td>{{ go.function.supplement }}</td>
 		</tr>
@@ -129,7 +129,7 @@
 	<tbody>
 		{% for kegg in gene.gene.funcannot_set.filter(function__source=2) %}
 		<tr>
-			<td>{{ kegg.function.accession }}</td>
+			<td><a href="http://www.kegg.jp/dbget-bin/www_bget?{{ kegg.function.accession }}">{{ kegg.function.accession }}</a></td>
 			<td>{{ kegg.function.descript }}</td>
 			<td>{{ kegg.function.supplement }}</td>
 		</tr>
@@ -147,9 +147,9 @@
 				<tr><th>Pfam ID</th><th>Description</th></tr>
 			</thead>
 			<tbody>
-				{% for pfam in gene.gene.funcannot_set.filter(function__source=3) %}
+				{% for pfam in gene.gene.funcannot_set.filter(function__source=4) %}
 				<tr>
-					<td>{{ pfam.function.accession }}</td>
+					<td><a href="http://pfam.xfam.org/family/{{ pfam.function.accession }}">{{ pfam.function.accession }}</a></td>
 					<td>{{ pfam.function.descript }}</td>
 				</tr>
 				{% else %}
@@ -165,9 +165,9 @@
 				<tr><th>InterPro ID</th><th>Description</th></tr>
 			</thead>
 			<tbody>
-				{% for interpro in gene.gene.funcannot_set.filter(function__source=4) %}
+				{% for interpro in gene.gene.funcannot_set.filter(function__source=3) %}
 				<tr>
-					<td>{{ interpro.function.accession }}</td>
+					<td><a href="http://www.ebi.ac.uk/interpro/entry/{{ interpro.function.accession }}">{{ interpro.function.accession }}</a></td>
 					<td>{{ interpro.function.descript }}</td>
 				</tr>
 				{% else %}

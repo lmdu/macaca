@@ -1,174 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<title>Macaca SNP Database</title>
-	<script src="{{ static('jquery-3.2.1.min.js') }}"></script>
-	<script src="{{ static('semantic/semantic.min.js') }}"></script>
-	<link rel="stylesheet" href="{{ static('semantic/semantic.min.css') }}">
-	<link rel="stylesheet" href="{{ static('style.css') }}">
-</head>
-<body>
-<div class="ui brown attached inverted segment">
-	<div class="ui brown inverted secondary huge menu">
-		<div class="ui container">
-			<div class="header">
-				<img src="{{ static('images/logo.png') }}" width="90" height="90">
+{% set urlname="home" %}
+{% extends "base.html" %}
+
+{% block main %}
+<div class="ui two column divided grid">
+	<div class="row">
+		<div class="twelve wide column">
+			<img src="{{ static('images/osx.jpg') }}">
+			<h3 class="ui header">Macaca SNP Database</h3>
+			<p>Dog Genome SNP Database (DoGSD) is a data container for the variation information of dog/wolf genomes. It was designed and constructed as an SNPs detector and visualization tool to provide the research community a useful resource for the study of dog's population, evolution, phenotype and life habit.
+
+In the current version, DoGSD contains 19 millions non-redundant SNPs retrived from dbSNP (ver 139) and called from 77 individual smaples.</p>
+			
+			<h3 class="ui header">Features</h3>
+			<ul class="ui list">
+				<li>We provide a non-redundant dataset for all SNPs and individual list for each sample.</li>
+				<li>We provide two ways to view SNP, one is table-based format and the other is chromosome based GBrowse format.</li>
+				<li>We provide detailed information of each SNP, including original sample, sequencing platform, chromosome position, SNP annotation, 3/5 flank sequences, SNPs of same position but detected in other samples, allele frequencies of dog/wolf populations and Fst value between dog and wolf populations.</li>
+				<li>We provide the comparative analysis function to facilitate a quick comparison of SNPs in different samples.</li>
+				<li>We provide table-delimited SNP, bam/sra and fastq files of each individual in the download ftp. User can get all the data and do more deep analysis.</li>
+			</ul>
+
+			<h3 class="ui header">Publications</h3>
+			<p>Bai B, Zhao WM, Tang BX, et al.(2015)."DoGSD: the dog and wolf genome SNP database." Nucleic Acids Res 43:777-783.PMID:25404132</p>
+
+			<h3 class="ui header">Participations</h3>
+			<p>This work contributed by Beijing Institute of Genomics (BIG) and Kunming Institute of Zoology (KIZ). BIG develops the database architecture and maintains the service, KIZ provides the data.</p>
+
+		</div>
+		<div class="four wide column">
+			<div class="ui brown inverted segment">
+				<p>Version 1.0</p>
+				<p>Last updated: Jul 26, 2014</p>
 			</div>
-			<a class="item" href="#">Home</a>
-			<a class="item" href="">Browse</a>
-			<a class="item" href="">Species</a>
-			<a class="item" href="#">Version</a>
-			<a class="item" href="#">Help</a>
-			<div class="right menu">
-				<div class="item">
-					<div class="ui icon input">
-						<input type="text" placeholder="chr19:56897-57988">
-						<i class="search link icon"></i>
-					</div>
-				</div>
-			</div>
+			<h4 class="ui header">What's New</h4>
+			<ul class="ui list">
+				<li>Version 2.0 is on line now which uses Canfam3.0 as the reference genome.</li>
+				<li>A total of 77 individual dog smaples are included.</li>
+				<li>Fst data for all the samples can be shown in Browser.</li>
+				<li>Google Map is integrated to show geographic locations of each individual sample.</li>
+				<li>updated Jul 26, 2014</li>
+			</ul>
 		</div>
 	</div>
 </div>
-
-<div class="ui main container">
-	<div class="ui segment">
-		<div class="ui circular labels">
-			Chromos:
-			<a class="ui label">All</a>
-			{% for c in chromos %}
-			<a class="ui label">{{c.name}}</a>
-			{% endfor %}
-		</div>
-
-		<div class="ui circular labels">
-			Individuals:
-			<a class="ui label">All</a>
-			{% for s in species %}
-			<a class="ui label">{{s.code}}</a>
-			{% endfor %}
-		</div>
-
-		<div class="ui circular labels">
-			Locations:
-			<a class="ui label">All</a>
-			<a class="ui label">CDS</a>
-			<a class="ui label">3'UTR</a>
-			<a class="ui label">5'UTR</a>
-			<a class="ui label">Intron</a>
-		</div>
-	</div>
-
-	<table class="ui celled table">
-		<thead>
-			<tr>
-				<th>SNP ID</th>
-				<th>Position</th>
-				<th>Individual</th>
-				<th>Reference</th>
-				<th>Alteration</th>
-				<th>Genotype</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for snp in snps %}
-			<tr>
-				<td><a href="{{ url('snp', kwargs={'sid':snp.id}) }}">MACSNP{{"%02d%02d%08d"|format(snp.snp.chrom.id,snp.species.id,snp.snp.id)}}</a></td>
-				<td>{{snp.snp.chrom.name}}: {{snp.snp.position}}</td>
-				<td>{{snp.species.code}}</td>
-				<td>{{snp.snp.reference}}</td>
-				<td>{{snp.snp.alteration}}</td>
-				<td>{{snp.get_genotype_display()}}</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-		<tfoot>
-			<tr><th colspan="6">
-			<div class="ui left floated segment">
-				{{ snps.paginator.count }} SNPs /
-				{{ snps.paginator.num_pages }} Pages
-			</div>
-			<div class="ui right floated pagination menu">
-				{% if snps.has_previous() %}
-				<a class="icon item" href="?page={{ snps.previous_page_number() }}">
-					<i class="left chevron icon"></i>
-				</a>
-				{% endif %}
-
-				{% for i in range(3, 0, -1) %}
-				{% if snps.number - i > 0 %}
-				<a class="item" href="?page={{snps.number-i}}">{{snps.number-i}}</a>
-				{% endif %}
-				{% endfor %}
-				<a class="item active" href="?page={{snps.number}}">{{snps.number}}</a>
-				{% for i in range(1, 4) %}
-				{% if snps.number + i <= snps.paginator.num_pages %}
-				<a class="item" href="?page={{snps.number+i}}">{{snps.number+i}}</a>
-				{% endif %}
-				{% endfor %}
-
-				{% for i in page_range %}
-				<a class="item {% if i == snps.number %} active {% endif %}" href="?page={{i}}">{{ i }}</a>
-				{% endfor %}
-
-				{% if snps.has_next() %}
-				<a class="icon item" href="?page={{ snps.next_page_number() }}">
-					<i class="right chevron icon"></i>
-				</a>
-				{% endif %}
-			</div>
-		</th></tr>
-		</tfoot>
-	</table>
-
-</div>
-
-<div class="ui inverted brown vertical footer segment">
-	<div class="ui center aligned container">
-      <div class="ui stackable inverted divided grid">
-        <div class="three wide column">
-          <h4 class="ui inverted header">Group 1</h4>
-          <div class="ui inverted link list">
-            <a href="#" class="item">Link One</a>
-            <a href="#" class="item">Link Two</a>
-            <a href="#" class="item">Link Three</a>
-            <a href="#" class="item">Link Four</a>
-          </div>
-        </div>
-        <div class="three wide column">
-          <h4 class="ui inverted header">Group 2</h4>
-          <div class="ui inverted link list">
-            <a href="#" class="item">Link One</a>
-            <a href="#" class="item">Link Two</a>
-            <a href="#" class="item">Link Three</a>
-            <a href="#" class="item">Link Four</a>
-          </div>
-        </div>
-        <div class="three wide column">
-          <h4 class="ui inverted header">Group 3</h4>
-          <div class="ui inverted link list">
-            <a href="#" class="item">Link One</a>
-            <a href="#" class="item">Link Two</a>
-            <a href="#" class="item">Link Three</a>
-            <a href="#" class="item">Link Four</a>
-          </div>
-        </div>
-        <div class="seven wide column">
-          <h4 class="ui inverted header">Footer Header</h4>
-          <p>Extra space for a call to action inside the footer that could help re-engage users.</p>
-        </div>
-      </div>
-      <div class="ui inverted section divider"></div>
-      <img src="assets/images/logo.png" class="ui centered mini image">
-      <div class="ui horizontal inverted small divided link list">
-        <a class="item" href="#">Site Map</a>
-        <a class="item" href="#">Contact Us</a>
-        <a class="item" href="#">Terms and Conditions</a>
-        <a class="item" href="#">Privacy Policy</a>
-      </div>
-    </div>
-</div>
-
-</body>
-</html>
+{% endblock %}

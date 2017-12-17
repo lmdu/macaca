@@ -4,16 +4,24 @@ from __future__ import unicode_literals
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from .models import Individual
-from .models import Variant
-from .models import Chromosome
+from .models import Individual, Variant, Chromosome, Species, Snp
 
 # Create your views here.
 def index(request):
-	pass
+	return render(request, 'index.html')
 
 def organism(request):
-	pass
+	samples = Individual.objects.all()
+	return render(request, 'organism.html', {
+		'samples': samples
+	})
+
+def species(request, sid):
+	one = Species.objects.get(id=sid)
+	return render(request, 'species.html', {
+		'species': one
+	})
+
 
 def group(request):
 	pass
@@ -66,10 +74,9 @@ def variants(request):
 		'paras': paras
 	})
 
-
-
+#Get snp by variant id
 def snp(request, sid):
-	one = Variant.objects.get(id=int(sid))
+	one = Variant.objects.get(id=sid)
 	genes = one.snp.geneannot_set.all()
 	transcripts = one.snp.transannot_set.all()
 	return render(request, 'snp.html', {
@@ -77,4 +84,14 @@ def snp(request, sid):
 		'genes': genes,
 		'transcripts': transcripts
 	})
+
+#get snp by mac snp id
+def snpid(request, indiv, chrom, sid):
+	asnp = Snp.objects.get(id=int(sid))
+	aind = Individual.objects.get(id=indiv)
+	one = Variant.objects.get(snp=asnp, individual=aind)
+	return snp(request, one.id)
+
+def search(request):
+	tag = request.GET.get('search')
 	

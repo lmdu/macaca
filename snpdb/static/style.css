@@ -14,7 +14,7 @@
 .genotype{
 	padding: 1px 10px;
 	display: inline-block;
-	border-radius: 5px;
+	border-radius: 15px;
 	color: #fff;
 }
 .genotype.hetero{
