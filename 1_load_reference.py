@@ -38,6 +38,7 @@ groups = {g.name: g for g in Group.objects.all()}
 print("load species information")
 from snpdb.models import Species
 species = []
+added = []
 species_file = os.path.join(data_dir, 'species_table.txt')
 with open(species_file) as fh:
 	for line in fh:
@@ -48,7 +49,10 @@ with open(species_file) as fh:
 			common = cols[3],
 			group = groups[cols[1]]
 		)
-		species.append(s)
+
+		if cols[0] not in added:
+			species.append(s)
+			added.append(cols[0])
 Species.objects.bulk_create(species)
 
 species = {s.taxonomy: s for s in Species.objects.all()}

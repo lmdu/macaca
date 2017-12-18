@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Individual, Variant, Chromosome, Species, Snp, Group
+from .models import GroupSpec, SpecieSpec
 
 # Create your views here.
 def index(request):
@@ -154,29 +155,34 @@ def specific(request):
 	groups = Group.objects.all()
 	species = Species.objects.all()
 	paras = dict(
-		page = int(request.GET.get('page', 10)),
+		page = int(request.GET.get('page', 1)),
 		records = int(request.GET.get('records', 10)),
 		chromosome = int(request.GET.get('chr', 0)),
 		feature = int(request.GET.get('feature', 0)),
 		mutation = int(request.GET.get('mutation', 0)),
-		category = request.GET.get('category', 'species'),
-		group = int(request.GET.get('group', 1)),
-		species = int(request.GET.get('species', 1)),
+		group = int(request.GET.get('group', -1)),
+		species = int(request.GET.get('species', 0)),
 	)
 
-	if paras['category'] == 'group':
-		snps = Snp.objects.filter(groupspec__group__id=paras['group'])
-	else:
-		snps = Snp.objects.filter(speciespec__species__id=paras['species'])
+	if paras['group'] >= 0:
+		if paras['group'] == 0:
+			snps = GroupSpec.objects.all()
+		else:
+			snps = GroupSpec.objects.filter(group=paras['group'])
+	elif paras['species'] >= 0:
+		if paras['species'] == 0:
+			snps = SpecieSpec.objects.all()
+		else:
+			snps = SpecieSpec.objects.filter(species=paras['species'])
 
 	if paras['mutation']:
-		snps = snps.filter(transannot__synonymous=paras['mutation'])
+		snps = snps.filter(snp__transannot__synonymous=paras['mutation'])
 
 	if paras['feature']:
-		snps = snps.filter(geneannot__feature=paras['feature'])
+		snps = snps.filter(snp__geneannot__feature=paras['feature'])
 
 	if paras['chromosome']:
-		snps = snps.filter(chrom=paras['chromosome'])
+		snps = snps.filter(snp__chrom=paras['chromosome'])
 	
 	paginator = Paginator(snps, paras['records'])
 

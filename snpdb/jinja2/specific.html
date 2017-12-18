@@ -1,32 +1,30 @@
 {% set urlname="specific" %}
 {% extends "base.html" %}
 {% block main %}
-<form action="{{ url('variants') }}" method="get" id="snps-filter">
+<form action="{{ url('specific') }}" method="get" id="snps-filter">
 <input type="hidden" id="page" name="page" value="{{ paras.page }}">
 <input type="hidden" id="chromosome" name="chr" value="{{ paras.chromosome }}">
-<input type="hidden" id="individual" name="sample" value="{{ paras.sample }}">
 <input type="hidden" id="feature" name="feature" value="{{ paras.feature }}">
-<input type="hidden" id="genotype" name="genotype" value="{{ paras.genotype }}">
 <input type="hidden" id="mutation" name="mutation" value="{{ paras.mutation }}">
+<input type="hidden" id="group" name="group" value="{{ paras.group }}">
+<input type="hidden" id="species" name="species" value="{{ paras.species }}">
 <div class="ui segment">
 	<div class="ui circular labels">
-		<a class="ui label">Species</a>
-		<select name="species" class="ui compact selection dropdown">
-			{% for s in species %}
-			<option value="{{ s.id }}">{{ s.scientific }}</option>
-			{% endfor %}
-		</select>
-
-		<a class="ui label">Group</a>
-		<select name="group" class="ui compact selection dropdown">
-			{% for g in groups %}
-			<option value="{{ g.id }}">{{ g.name }}</option>
-			{% endfor %}
-		</select>
+		<strong>Species:</strong>
+		<a class="ui species label {% if paras.species==0 %} orange {% endif %}" data-num="0">All</a>
+		{% for s in species %}
+		<a class="ui species label {% if paras.species==s.id %} orange {% endif %}" data-num="{{s.id}}">{{s.common|species_code }}</a>
+		{% endfor %}
+		
+		<strong>Groups:</strong>
+		<a class="ui group label {% if paras.group==0 %} orange {% endif %}" data-num="0">All</a>
+		{% for g in groups %}
+		<a class="ui group label {% if paras.group==g.id %} orange {% endif %}" data-num="{{g.id}}">{{g.name}}</a>
+		{% endfor %}
 	</div>
 
 	<div class="ui chromosome circular labels">
-		Chromo:
+		<strong>Chromo:</strong>
 		<a class="ui label {% if paras.chromosome==0 %} orange {% endif %}" data-num="0">All</a>
 		{% for c in chromos %}
 		<a class="ui label {% if paras.chromosome==c.id %} orange {% endif %}" data-num="{{c.id}}">{{c.name}}</a>
@@ -38,12 +36,12 @@
 	{% set mutations = ["All", "non-synonymous", "synonymous"] %}
 
 	<div class="ui circular labels">
-		Feature:
+		<strong>Feature:</strong>
 		{% for f in features %}
 		<a class="ui features label {% if paras.feature==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ f }}</a>
 		{% endfor %}
 
-		Mutation:
+		<strong>Mutation:</strong>
 		{% for m in mutations %}
 		<a class="ui mutations label {% if paras.mutation==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ m }}</a>
 		{% endfor %}
@@ -75,7 +73,13 @@
 <table class="ui celled table">
 	<thead>
 		<tr>
+			<th>SNP ID</th>
 			<th>Position</th>
+			{% if paras.group>=0 %}
+			<th>Group</th>
+			{% else %}
+			<th>Species</th>
+			{% endif %}
 			<th>Reference</th>
 			<th>Alteration</th>
 		</tr>
@@ -83,9 +87,21 @@
 	<tbody>
 		{% for snp in snps %}
 		<tr>
-			<td>{{ snp.chrom.name }}:{{snp.position}}</td>
-			<td>{{snp.reference}}</td>
-			<td>{{snp.alteration}}</td>
+			<td>
+				{% if paras.group>=0 %}
+				MACSNPG{{ "%02d%08d"|format(snp.group.id, snp.snp.id) }}
+				{% else %}
+				MACSNPS{{ "%02d%08d"|format(snp.species.id, snp.snp.id) }}
+				{% endif %}
+			</td>
+			<td>{{ snp.snp.chrom.name }}:{{snp.snp.position}}</td>
+			{% if paras.group>=0 %}
+			<td>{{ snp.group.name }}</td>
+			{% else %}
+			<td>{{ snp.species.common }}</td>
+			{% endif %}
+			<td>{{snp.snp.reference}}</td>
+			<td>{{snp.snp.alteration}}</td>
 		</tr>
 		{% else %}
 		<tr><td colspan="6" class="center aligned">No Results Found</td></tr>

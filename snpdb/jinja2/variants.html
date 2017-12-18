@@ -3,7 +3,7 @@
 {% block main %}
 <div class="ui segment">
 	<div class="ui chromosome circular labels">
-		Chromo:
+		<strong>Chromo:</strong>
 		<a class="ui label {% if paras.chromosome==0 %} orange {% endif %}" data-num="0">All</a>
 		{% for c in chromos %}
 		<a class="ui label {% if paras.chromosome==c.id %} orange {% endif %}" data-num="{{c.id}}">{{c.name}}</a>
@@ -11,7 +11,7 @@
 	</div>
 
 	<div class="ui individual circular labels">
-		Macaca:
+		<strong>Macaca:</strong>
 		<a class="ui label {% if paras.sample==0 %} orange {% endif %}" data-num="0">All</a>
 		{% for s in species %}
 		<a class="ui label {% if paras.sample==s.id %} orange {% endif %}" data-num="{{s.id}}">{{s.code}}</a>
@@ -23,17 +23,17 @@
 	{% set mutations = ["All", "non-synonymous", "synonymous"] %}
 
 	<div class="ui circular labels">
-		Feature:
+		<strong>Feature:</strong>
 		{% for f in features %}
 		<a class="ui features label {% if paras.feature==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ f }}</a>
 		{% endfor %}
 
-		Genotype:
+		<strong>Genotype:</strong>
 		{% for t in genotypes %}
 		<a class="ui genotypes label {% if paras.genotype==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ t }}</a>
 		{% endfor %}
 
-		Mutation:
+		<strong>Mutation:</strong>
 		{% for m in mutations %}
 		<a class="ui mutations label {% if paras.mutation==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ m }}</a>
 		{% endfor %}

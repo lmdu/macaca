@@ -54,6 +54,21 @@ $('.ui.numperpage').change(function(){
 	$('#snps-filter').submit();
 });
 
+//set group or species specific snps
+$('.ui.group').click(function(e){
+	e.preventDefault();
+	$('#group').val($(this).data('num'));
+	$('#species').val(-1);
+	$('#snps-filter').submit();
+});
+
+$('.ui.species').click(function(e){
+	e.preventDefault();
+	$('#species').val($(this).data('num'));
+	$('#group').val(-1);
+	$('#snps-filter').submit();
+});
+
 //start search SNPs
 $('i.search.icon').click(function(){
 	var tag = $('#search-input').val();
