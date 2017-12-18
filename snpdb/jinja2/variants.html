@@ -98,6 +98,8 @@
 				{% endif %}
 			</td>
 		</tr>
+		{% else %}
+		<tr><td colspan="6" class="center aligned">No Results Found</td></tr>
 		{% endfor %}
 	</tbody>
 	<tfoot>
@@ -115,7 +117,7 @@
 			{% endif %}
 			{% endfor %}
 			
-			<a class="item active" data-num="{{snps.number}}">{{snps.number}}</a>
+			<span class="item active" data-num="{{snps.number}}">{{snps.number}}</span>
 			
 			{% for i in range(1, 4) %}
 			{% if snps.number + i <= snps.paginator.num_pages %}

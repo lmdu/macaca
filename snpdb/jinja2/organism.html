@@ -21,7 +21,7 @@
 			<td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{s.species.taxonomy}}" target="_blank">{{s.species.taxonomy}}</a></td>
 			<td><a href="{{ url('species', kwargs={'sid':s.species.id}) }}"><i>{{s.species.scientific}}</i></a></td>
 			<td>{{s.species.common}}</td>
-			<td><a href="">{{s.species.group.name}}</a></td>
+			<td><a href="{{ url('group', kwargs={'gid':s.species.group.id}) }}">{{s.species.group.name}}</a></td>
 			<td>{{s.location}}</td>
 			<td>{{s.variant_set.count()}}</td>
 		</tr>

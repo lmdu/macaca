@@ -1,13 +1,35 @@
-{% set urlname="variants" %}
+{% set urlname="specific" %}
 {% extends "base.html" %}
 {% block main %}
-<div class="ui header">Search for SNPs on Chromosome {{ paras.chrname }} from {{paras.start}} to {{paras.end}}</div>
+<form action="{{ url('variants') }}" method="get" id="snps-filter">
+<input type="hidden" id="page" name="page" value="{{ paras.page }}">
+<input type="hidden" id="chromosome" name="chr" value="{{ paras.chromosome }}">
+<input type="hidden" id="individual" name="sample" value="{{ paras.sample }}">
+<input type="hidden" id="feature" name="feature" value="{{ paras.feature }}">
+<input type="hidden" id="genotype" name="genotype" value="{{ paras.genotype }}">
+<input type="hidden" id="mutation" name="mutation" value="{{ paras.mutation }}">
 <div class="ui segment">
-	<div class="ui individual circular labels">
-		Macaca:
-		<a class="ui label {% if paras.sample==0 %} orange {% endif %}" data-num="0">All</a>
-		{% for s in species %}
-		<a class="ui label {% if paras.sample==s.id %} orange {% endif %}" data-num="{{s.id}}">{{s.code}}</a>
+	<div class="ui circular labels">
+		<a class="ui label">Species</a>
+		<select name="species" class="ui compact selection dropdown">
+			{% for s in species %}
+			<option value="{{ s.id }}">{{ s.scientific }}</option>
+			{% endfor %}
+		</select>
+
+		<a class="ui label">Group</a>
+		<select name="group" class="ui compact selection dropdown">
+			{% for g in groups %}
+			<option value="{{ g.id }}">{{ g.name }}</option>
+			{% endfor %}
+		</select>
+	</div>
+
+	<div class="ui chromosome circular labels">
+		Chromo:
+		<a class="ui label {% if paras.chromosome==0 %} orange {% endif %}" data-num="0">All</a>
+		{% for c in chromos %}
+		<a class="ui label {% if paras.chromosome==c.id %} orange {% endif %}" data-num="{{c.id}}">{{c.name}}</a>
 		{% endfor %}
 	</div>
 
@@ -21,11 +43,6 @@
 		<a class="ui features label {% if paras.feature==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ f }}</a>
 		{% endfor %}
 
-		Genotype:
-		{% for t in genotypes %}
-		<a class="ui genotypes label {% if paras.genotype==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ t }}</a>
-		{% endfor %}
-
 		Mutation:
 		{% for m in mutations %}
 		<a class="ui mutations label {% if paras.mutation==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ m }}</a>
@@ -37,23 +54,14 @@
 
 <div class="ui grid">
 	<div class="eight wide column">
-		<form action="{{ url('search') }}" method="get" id="snps-filter">
-			<input type="hidden" id="page" name="page" value="{{ paras.page }}">
-			<input type="hidden" id="individual" name="sample" value="{{ paras.sample }}">
-			<input type="hidden" id="feature" name="feature" value="{{ paras.feature }}">
-			<input type="hidden" id="genotype" name="genotype" value="{{ paras.genotype }}">
-			<input type="hidden" id="mutation" name="mutation" value="{{ paras.mutation }}">
-			<input type="hidden" name="search" value="{{ paras.tag }}">
-		
-			Show
-			<select name="records" class="ui numperpage compact selection dropdown">
-				{% set pages=[10, 25, 50, 100] %}
-				{% for v in pages %}
-				<option value="{{v}}" {% if paras.records==v %} selected="selected" {% endif %}>{{v}}</option>
-				{% endfor %}
-			</select>
-			entries
-		</form>
+		Show
+		<select name="records" class="ui numperpage compact selection dropdown">
+			{% set pages=[10, 25, 50, 100] %}
+			{% for v in pages %}
+			<option value="{{v}}" {% if paras.records==v %} selected="selected" {% endif %}>{{v}}</option>
+			{% endfor %}
+		</select>
+		entries
 	</div>
 
 	<div class="right aligned eight wide column">
@@ -67,29 +75,17 @@
 <table class="ui celled table">
 	<thead>
 		<tr>
-			<th>SNP ID</th>
 			<th>Position</th>
-			<th>Individual</th>
 			<th>Reference</th>
 			<th>Alteration</th>
-			<th>Genotype</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for snp in snps %}
 		<tr>
-			<td><a href="{{ url('snp', kwargs={'sid':snp.id}) }}">MACSNP{{"%02d%02d%08d"|format(snp.individual.id,snp.snp.chrom.id,snp.snp.id)}}</a></td>
-			<td>{{snp.snp.chrom.name}}: {{snp.snp.position}}</td>
-			<td>{{snp.individual.code}}</td>
-			<td>{{snp.snp.reference}}</td>
-			<td>{{snp.snp.alteration}}</td>
-			<td>
-				{% if snp.genotype == 1 %}
-				<span class="genotype homo">homozygote</span>
-				{% else %}
-				<span class="genotype hetero">heterozygote</span>
-				{% endif %}
-			</td>
+			<td>{{ snp.chrom.name }}:{{snp.position}}</td>
+			<td>{{snp.reference}}</td>
+			<td>{{snp.alteration}}</td>
 		</tr>
 		{% else %}
 		<tr><td colspan="6" class="center aligned">No Results Found</td></tr>
@@ -127,5 +123,5 @@
 	</th></tr>
 	</tfoot>
 </table>
-
+</form>
 {% endblock %}

@@ -18,22 +18,22 @@
 			</div>
 			<a class="item {% if urlname=='home' %} active {% endif %}" href="{{ url('home') }}">Home</a>
 			<a class="item {% if urlname=='variants' %} active {% endif %}" href="{{ url('variants') }}">Variants</a>
-			<a class="item {% if urlname=='organism' %} active {% endif %}" href="{{ url('organism') }}" href="">Organism</a>
-			<a class="item" href="#">Specific SNPs</a>
+			<a class="item {% if urlname=='organism' %} active {% endif %}" href="{{ url('organism') }}">Organism</a>
+			<a class="item {% if urlname=='specific' %} active {% endif %}" href="{{ url('specific') }}">Specific SNPs</a>
 			<a class="item" href="">Help</a>
 			<div class="right menu">
 				<div class="item">
 					<form method="get" id="search" action="{{url('search')}}">
 						<div class="ui icon input">
 							<input type="text" id="search-input" name="search" placeholder="chr19:56897-57988">
-							<i class="search link icon"></i>
+							<i class="search link icon"></i>`
 						</div>
 					</form>
 
 					<div class="ui small modal">
 						<div class="header">Warning Message</div>
 						<div class="content">
-							<p>Your input can not be empty, the input can be</p>
+							<p>Your input can not be empty and the input must be one below:</p>
 							<p>1. chromosome id with position range like <strong>chr10:17689-18456</strong></p>
 							<p>2. a SNP id like <strong>MACSNP201900001698</strong></p>
 						</div>

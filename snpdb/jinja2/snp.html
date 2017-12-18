@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block main %}
 <h2 class="ui brown header">
-	MACSNP{{"%02d%02d%08d"|format(snp.snp.chrom.id,snp.individual.id,snp.snp.id)}}
+	MACSNP{{"%02d%02d%08d"|format(snp.individual.id,snp.snp.chrom.id,snp.snp.id)}}
 </h2>
 
 <h3 class="ui header">Individual Information</h3>
