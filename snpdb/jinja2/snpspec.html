@@ -5,7 +5,7 @@
 <h2 class="ui brown header">
 	MACSNP{{"%s%02d%08d"|format(cat, category.id, snp.id)}}
 	<div class="ui orange large label">
-		Specific to {% if cat == 'G' %} Group {{category.name}} {% else %} Species {{category.common}} {% endif %}
+		{% if cat == 'G' %}Group{% else %}Species{% endif %}-Specific to {% if cat == 'G' %} {{category.name}} {% else %} {{category.common}} {% endif %}
 	</div>
 </h2>
 

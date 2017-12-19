@@ -151,13 +151,17 @@ def get_codon_info(transcript, position):
 		if start <= position <= end:
 			break
 
-	if strand == '-':
-		cs.reverse()
+	#if strand == '-':
+	#	cs.reverse()
 
 	idx = cs.index((start, end))
 
 	rpos = sum([ e[1]-e[0]+1 for i, e in enumerate(cs) if i < idx])
-	rpos += position - start + 1
+
+	if strand == '+':
+		rpos += position - start + 1
+	else:
+		rpos += end - position + 1
 
 	codon_pos = rpos % 3
 	if codon_pos == 0:
@@ -214,11 +218,14 @@ with open(snp_file) as fh:
 					locations.append(locus.feature)
 
 					tpos = calc_trasncript_relative_position(locus.transcript, pos)
-					
+					strand = transcripts[locus.transcript].strand
 					ref_codon, codon_pos, ref_aa, protein_pos = get_codon_info(locus.transcript, pos)
 
 					alt_codon = list(ref_codon)
-					alt_codon[codon_pos-1] = cols[3]
+					if strand == '-':
+						alt_codon[codon_pos-1] = reverse_complement(cols[3])
+					else:
+						alt_codon[codon_pos-1] = cols[3]
 					alt_codon = "".join(alt_codon)
 
 					if ref_aa != Seq(ref_codon).translate():
@@ -273,7 +280,7 @@ with open(snp_file) as fh:
 					if ref_aa == alt_aa:
 						mutation = 1
 					else:
-						mutation = 0
+						mutation = 2
 
 					record = [cols[0], pos, locus.transcript, tpos, codon, codon_pos, alt_codon, ref_aa, alt_aa, protein_pos, mutation]
 
@@ -288,15 +295,4 @@ with open(snp_file) as fh:
 
 			for feat in set(locations):
 				print "%s\t%s\t%s\t%s\t%s" % (cols[0], pos, r.geneid, gene_pos, feat_types[feat])
-
-			
-
-
-
-
-
-
-
-
-
 
