@@ -82,6 +82,7 @@
 			{% endif %}
 			<th>Reference</th>
 			<th>Alteration</th>
+			<th>Genotype</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -89,9 +90,13 @@
 		<tr>
 			<td>
 				{% if paras.group>=0 %}
-				MACSNPG{{ "%02d%08d"|format(snp.group.id, snp.snp.id) }}
+				<a href="{{ url('snpspec', kwargs={'cat':'G','cid':'%02d'|format(snp.group.id), 'sid':'%09d'|format(snp.snp.id)}) }}">
+					MACSNPG{{ "%02d%09d"|format(snp.group.id, snp.snp.id) }}
+				</a>
 				{% else %}
-				MACSNPS{{ "%02d%08d"|format(snp.species.id, snp.snp.id) }}
+				<a href="{{ url('snpspec', kwargs={'cat':'S','cid':'%02d'|format(snp.species.id), 'sid':'%09d'|format(snp.snp.id)}) }}">
+					MACSNPS{{ "%02d%09d"|format(snp.species.id, snp.snp.id) }}
+				</a>
 				{% endif %}
 			</td>
 			<td>{{ snp.snp.chrom.name }}:{{snp.snp.position}}</td>
@@ -102,6 +107,7 @@
 			{% endif %}
 			<td>{{snp.snp.reference}}</td>
 			<td>{{snp.snp.alteration}}</td>
+			<td><span class="genotype homo">homozygote</span></td>
 		</tr>
 		{% else %}
 		<tr><td colspan="6" class="center aligned">No Results Found</td></tr>

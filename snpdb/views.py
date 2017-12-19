@@ -90,17 +90,16 @@ def snp(request, sid):
 	})
 
 #get snp by mac snp id
-def snpid(request, indiv, chrom, sid):
+def snpid(request, indiv, sid):
 	one = Variant.objects.get(snp__id=int(sid), individual__id=int(indiv))
 	return snp(request, one.id)
 
 def search(request):
 	tag = request.GET.get('search')
 	if tag.startswith('MACSNP'):
-		i = int(tag[6:8])
-		c = int(tag[8:10])
-		s = int(tag[10:])
-		return snpid(request, i, c, s)
+		i = int(tag[6:9])
+		s = int(tag[9:])
+		return snpid(request, i, s)
 	
 	chr_id = int(tag[3:5])
 	start, end = map(int,tag.split(':')[1].split('-'))
@@ -199,4 +198,20 @@ def specific(request):
 		'groups': groups,
 		'species': species,
 		'paras': paras,
+	})
+
+def snpspec(request, cat, cid, sid):
+	if cat == 'G':
+		category = Group.objects.get(id=int(cid))
+	else:
+		category = Species.objects.get(id=int(cid))
+	one = Snp.objects.get(id=int(sid))
+	genes = one.geneannot_set.all()
+	transcripts = one.transannot_set.all()
+	return render(request, 'snpspec.html', {
+		'cat': cat,
+		'snp': one,
+		'category': category,
+		'genes': genes,
+		'transcripts': transcripts
 	})

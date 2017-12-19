@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="ui brown attached inverted segment">
-	<div class="ui brown inverted secondary huge menu">
+	<div class="ui brown inverted secondary large menu">
 		<div class="ui container">
 			<div class="header">
 				<img src="{{ static('images/logo.png') }}" width="100" height="83">
@@ -20,6 +20,7 @@
 			<a class="item {% if urlname=='variants' %} active {% endif %}" href="{{ url('variants') }}">Variants</a>
 			<a class="item {% if urlname=='organism' %} active {% endif %}" href="{{ url('organism') }}">Organism</a>
 			<a class="item {% if urlname=='specific' %} active {% endif %}" href="{{ url('specific') }}">Specific SNPs</a>
+      <a class="item" href="">Download</a>
 			<a class="item" href="">Help</a>
 			<div class="right menu">
 				<div class="item">
@@ -35,7 +36,7 @@
 						<div class="content">
 							<p>Your input can not be empty and the input must be one below:</p>
 							<p>1. chromosome id with position range like <strong>chr10:17689-18456</strong></p>
-							<p>2. a SNP id like <strong>MACSNP201900001698</strong></p>
+							<p>2. a SNP id like <strong>MACSNP20000001698</strong></p>
 						</div>
 					</div>
 

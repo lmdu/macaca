@@ -1,6 +1,7 @@
 $(document).ready(function(){
 
 $('select.dropdown').dropdown();
+//$('.ui.checkbox').checkbox();
 
 //set chromosome link
 $('.ui.chromosome a').click(function(e){
@@ -78,10 +79,57 @@ $('i.search.icon').click(function(){
 		$('#search').submit();
 	}else{
 		$('.ui.small.modal').modal('show');
-	}
+	}	
+});
 
-	
-	
+//checkbox
+$('.ui.master.checkbox').checkbox({
+	onChecked: function(){
+		$('.ui.child.checkbox').checkbox('check');
+		$('.ui.download .label').text($('.ui.numperpage').dropdown('get value'));
+	},
+	onUnchecked: function(){
+		$('.ui.child.checkbox').checkbox('uncheck');
+		$('.ui.download .label').text(0);
+	}
+});
+
+$('.ui.child.checkbox').checkbox({
+	fireOnInit: true,
+	onChecked: function(){
+		var count = parseInt($('.ui.download .label').text());
+		$('.ui.download .label').text(count+1);
+	},
+	onUnchecked: function(){
+		var count = parseInt($('.ui.download .label').text());
+		count = count - 1;
+		if(count < 0){
+			count = 0;
+		}
+		$('.ui.download .label').text(count);
+	},
+	onChange: function(){
+		var allChecked = true;
+		var allUnchecked = true;
+
+		$('.ui.child.checkbox').each(function(){
+			if($(this).checkbox('is checked')){
+				allUnchecked = false;
+			}else{
+				allChecked = false;
+			}
+		});
+
+		if(allChecked){
+			$('.ui.master.checkbox').checkbox('set checked');
+		}
+		else if(allUnchecked){
+			$('.ui.master.checkbox').checkbox('set unchecked');
+		}
+		else{
+			$('.ui.master.checkbox').checkbox('set indeterminate')
+		}
+	}
 });
 
 
