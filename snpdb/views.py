@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Individual, Variant, Chromosome, Species, Snp, Group
-from .models import GroupSpec, SpecieSpec
+from .models import GroupSpec, SpecieSpec, TransAnnot
 
 # Create your views here.
 def index(request):
@@ -61,6 +61,7 @@ def variants(request):
 	if paras['chromosome']:
 		snps = snps.filter(snp__chrom=paras['chromosome'])
 
+	snps = snps.order_by('id')
 
 	paginator = Paginator(snps, paras['records'])
 

@@ -33,7 +33,7 @@ class Individual(models.Model):
 	mean_coverage = models.FloatField(help_text="Mean coverage")
 
 class Snp(models.Model):
-	chrom = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
+	chromosome = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
 	position = models.BigIntegerField(help_text="Position in chromosome sequence")
 	reference = models.CharField(max_length=1, help_text="Reference base")
 	alteration = models.CharField(max_length=1, help_text="SNP alteration base")
@@ -59,7 +59,7 @@ class Gene(models.Model):
 		(6, 'miscRNA'),
 		(7, 'snoRNA')
 	)
-	ensembl_id = models.CharField(max_length=18, help_text="Ensembl gene id")
+	ensembl = models.CharField(max_length=18, help_text="Ensembl gene id")
 	name = models.CharField(max_length=20, help_text="Gene name")
 	description = models.CharField(max_length=200, help_text="Gene description")
 	biotype = models.SmallIntegerField(choices=CODING_TYPES, help_text="Gene coding types")
@@ -68,15 +68,15 @@ class Gene(models.Model):
 	strand = models.CharField(max_length=1, help_text="Gene strand")
 
 class Transcript(models.Model):
-	ensembl_id = models.CharField(max_length=18, help_text="Transcript ensembl id")
-	parent = models.ForeignKey(Gene, on_delete=models.CASCADE, help_text="which gene for this transcript")
+	ensembl = models.CharField(max_length=18, help_text="Transcript ensembl id")
+	gene = models.ForeignKey(Gene, on_delete=models.CASCADE, help_text="which gene for this transcript")
 	protein = models.CharField(max_length=18, help_text="Protein ensembl id")
 	start = models.IntegerField(help_text="Transcript start position")
 	end = models.IntegerField(help_text="Transcript end position")
 	strand = models.CharField(max_length=1, help_text="Transcript strand")
 
-class GeneAnnot(models.Model):
-	FEATURES = (
+class Annotation(models.Model):
+	FEATURE_TYPES = (
 		(1, 'CDS'),
 		(2, 'Exon'),
 		(3, "3'UTR"),
@@ -85,10 +85,10 @@ class GeneAnnot(models.Model):
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
-	gene_pos = models.IntegerField(help_text="Relative position in gene")
-	feature = models.SmallIntegerField(choices=FEATURES, help_text="Gene features")
+	gene_position = models.IntegerField(help_text="Relative position in gene")
+	feature_type = models.SmallIntegerField(choices=FEATURE_TYPES, help_text="Gene features")
 
-class TransAnnot(models.Model):
+class Comment(models.Model):
 	MUTATION_TYPES = (
 		(1, 'Non-synonymous'),
 		(2, 'Synonymous'),
@@ -104,6 +104,14 @@ class TransAnnot(models.Model):
 	protein_pos = models.IntegerField(help_text="Relative position of codon in protein")
 	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, help_text="Mutation type")
 
+class Mutation(models.Model):
+	MUTATION_TYPES = (
+		(1, 'Non-synonymous'),
+		(2, 'Synonymous'),
+	)
+	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
+	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, help_text="Mutation type")
+
 class Function(models.Model):
 	FUNC_TYPES = (
 		(1, 'GO'),
@@ -113,18 +121,18 @@ class Function(models.Model):
 	)
 	source = models.SmallIntegerField(choices=FUNC_TYPES, help_text="The function source database name")
 	accession = models.CharField(max_length=10, help_text="Functional database accession id")
-	descript = models.CharField(max_length=200, help_text="Function description")
+	description = models.CharField(max_length=200, help_text="Function description")
 	supplement = models.CharField(max_length=80, help_text="Other information")
 
 class Funcannot(models.Model):
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	function = models.ForeignKey(Function, on_delete=models.CASCADE)
 
-class GroupSpec(models.Model):
+class GroupSpecific(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
-class SpecieSpec(models.Model):
+class SpeciesSpecific(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	species = models.ForeignKey(Species, on_delete=models.CASCADE)
 	

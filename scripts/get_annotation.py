@@ -133,12 +133,15 @@ def calc_trasncript_relative_position(transcript, position):
 		if start <= position <= end:
 			break
 
-	if strand == '-':
-		es.reverse()
+	#if strand == '-':
+	#	es.reverse()
 
 	idx = es.index((start, end))
 	rpos = sum([ e[1]-e[0]+1 for i, e in enumerate(es) if i < idx])
-	rpos += position - start + 1
+	if strand == '+':
+		rpos += position - start + 1
+	else:
+		rpos += end - position + 1
 
 	return rpos
 
@@ -265,7 +268,10 @@ with open(snp_file) as fh:
 					protein_pos = len(protein_seq[transcript_to_protein[locus.transcript]])+1
 
 					alt_codon = list(codon)
-					alt_codon[codon_pos-1] = cols[3]
+					if strand == '+':
+						alt_codon[codon_pos-1] = cols[3]
+					else:
+						alt_codon[codon_pos-1] = reverse_complement(cols[3])
 					alt_codon = "".join(alt_codon)
 
 					ref_aa = Seq(codon).translate(stop_symbol='stop_codon')
