@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Individual, Variant, Chromosome, Species, Snp, Group
-from .models import GroupSpec, SpecieSpec, TransAnnot
+from .models import GroupSpecific, SpeciesSpecific
 
 # Create your views here.
 def index(request):
@@ -53,13 +53,13 @@ def variants(request):
 		snps = snps.filter(genotype=paras['genotype'])
 
 	if paras['mutation']:
-		snps = snps.filter(snp__transannot__synonymous=paras['mutation'])
+		snps = snps.filter(snp__mutation__synonymous=paras['mutation'])
 
 	if paras['feature']:
-		snps = snps.filter(snp__geneannot__feature=paras['feature'])
+		snps = snps.filter(snp__annotation__feature=paras['feature'])
 
 	if paras['chromosome']:
-		snps = snps.filter(snp__chrom=paras['chromosome'])
+		snps = snps.filter(snp__chromosome=paras['chromosome'])
 
 	snps = snps.order_by('id')
 
@@ -82,8 +82,8 @@ def variants(request):
 #Get snp by variant id
 def snp(request, sid):
 	one = Variant.objects.get(id=sid)
-	genes = one.snp.geneannot_set.all()
-	transcripts = one.snp.transannot_set.all()
+	genes = one.snp.annotation_set.all()
+	transcripts = one.snp.comment_set.all()
 	return render(request, 'snp.html', {
 		'snp': one,
 		'genes': genes,
@@ -120,7 +120,7 @@ def search(request):
 		mutation = int(request.GET.get('mutation', 0))
 	)
 
-	snps = Variant.objects.filter(snp__chrom=chr_id, snp__position__gte=start, snp__position__lte=end)
+	snps = Variant.objects.filter(snp__chromosome=chr_id, snp__position__gte=start, snp__position__lte=end)
 
 	if paras['sample']:
 		snps = snps.filter(individual=paras['sample'])
@@ -129,10 +129,10 @@ def search(request):
 		snps = snps.filter(genotype=paras['genotype'])
 
 	if paras['mutation']:
-		snps = snps.filter(snp__transannot__synonymous=paras['mutation'])
+		snps = snps.filter(snp__mutation__synonymous=paras['mutation'])
 
 	if paras['feature']:
-		snps = snps.filter(snp__geneannot__feature=paras['feature'])
+		snps = snps.filter(snp__annotation__feature=paras['feature'])
 
 
 	paginator = Paginator(snps, paras['records'])
@@ -166,23 +166,23 @@ def specific(request):
 
 	if paras['group'] >= 0:
 		if paras['group'] == 0:
-			snps = GroupSpec.objects.all()
+			snps = GroupSpecific.objects.all()
 		else:
-			snps = GroupSpec.objects.filter(group=paras['group'])
+			snps = GroupSpecific.objects.filter(group=paras['group'])
 	elif paras['species'] >= 0:
 		if paras['species'] == 0:
-			snps = SpecieSpec.objects.all()
+			snps = SpeciesSpecific.objects.all()
 		else:
-			snps = SpecieSpec.objects.filter(species=paras['species'])
+			snps = SpeciesSpecific.objects.filter(species=paras['species'])
 
 	if paras['mutation']:
-		snps = snps.filter(snp__transannot__synonymous=paras['mutation'])
+		snps = snps.filter(snp__mutation__synonymous=paras['mutation'])
 
 	if paras['feature']:
-		snps = snps.filter(snp__geneannot__feature=paras['feature'])
+		snps = snps.filter(snp__annotation__feature=paras['feature'])
 
 	if paras['chromosome']:
-		snps = snps.filter(snp__chrom=paras['chromosome'])
+		snps = snps.filter(snp__chromosome=paras['chromosome'])
 	
 	paginator = Paginator(snps, paras['records'])
 
@@ -207,8 +207,8 @@ def snpspec(request, cat, cid, sid):
 	else:
 		category = Species.objects.get(id=int(cid))
 	one = Snp.objects.get(id=int(sid))
-	genes = one.geneannot_set.all()
-	transcripts = one.transannot_set.all()
+	genes = one.annotation_set.all()
+	transcripts = one.comment_set.all()
 	return render(request, 'snpspec.html', {
 		'cat': cat,
 		'snp': one,

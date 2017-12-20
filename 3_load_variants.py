@@ -19,12 +19,12 @@ from snpdb.models import Variant
 from snpdb.models import Individual
 genotype_file = os.path.join(data_dir, 'genotype_table.txt')
 
-chromos = {c.name:c.id for c in Chromosome.objects.all()}
+chromos = {c.name: c.id for c in Chromosome.objects.all()}
 genotypes = {'1/1': 1, '0/1': 2}
 species = {s.code: s.id for s in Individual.objects.all()}
 
 with connection.cursor() as c:
-	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chrom_id FROM snpdb_snp")}
+	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")}
 
 variants = []
 progress = 0

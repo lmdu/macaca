@@ -19,14 +19,15 @@ from snpdb.models import Transcript
 annot_file = os.path.join(data_dir, 'annotation_table.txt')
 
 chromos = {c.name:c.id for c in Chromosome.objects.all()}
-genes = {g.ensembl_id:g.id for g in Gene.objects.all()}
-transcripts = {t.ensembl_id:t.id for t in Transcript.objects.all()}
+genes = {g.ensembl:g.id for g in Gene.objects.all()}
+transcripts = {t.ensembl:t.id for t in Transcript.objects.all()}
 
 with connection.cursor() as c:
-	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chrom_id FROM snpdb_snp")}
+	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")}
 
 gannots = []
 tannots = []
+mutations = []
 
 with transaction.atomic():
 	with connection.cursor() as c:
@@ -36,15 +37,18 @@ with transaction.atomic():
 				snp = snps[(chromos[cols[0]], int(cols[1]))]
 				if len(cols) > 5:
 					tannots.append((None, int(cols[3]), cols[4], int(cols[5]), cols[6], cols[7], cols[8], int(cols[9]), int(cols[10]), snp, transcripts[cols[2]]))
+					if (None, int(cols[10]), snp) not in mutations:
+						mutations.append((None, int(cols[10]), snp))
 				else:
 					gannots.append((None, int(cols[3]), int(cols[4]), genes[cols[2]], snp))
 
-		c.executemany("INSERT INTO snpdb_geneannot VALUES (?,?,?,?,?)", gannots)
-		c.executemany("INSERT INTO snpdb_transannot VALUES (?,?,?,?,?,?,?,?,?,?,?)", tannots)
+		c.executemany("INSERT INTO snpdb_annotation VALUES (?,?,?,?,?)", gannots)
+		c.executemany("INSERT INTO snpdb_comment VALUES (?,?,?,?,?,?,?,?,?,?,?)", tannots)
+		c.executemany("INSERT INTO snpdb_mutation VALUES (?,?,?)", mutations)
 
 #load genes
 from snpdb.models import Gene
-gene_mapping = {g.ensembl_id: g for g in Gene.objects.all()}
+gene_mapping = {g.ensembl: g for g in Gene.objects.all()}
 
 print("load go term information")
 go_file = os.path.join(data_dir, 'goterm_table.txt')
@@ -60,7 +64,7 @@ with open(go_file) as fh:
 			go = Function(
 				source = 1,
 				accession = cols[1],
-				descript = cols[2],
+				description = cols[2],
 				supplement = cols[3]
 			)
 			GOS[cols[1]] = go
@@ -97,7 +101,7 @@ with open(kegg_file) as fh:
 			kegg = Function(
 				source = 2,
 				accession = cols[1],
-				descript = cols[2],
+				description = cols[2],
 				supplement = cols[3]
 			)
 			KEGGS[cols[1]] = kegg
@@ -134,8 +138,8 @@ with open(ipro_file) as fh:
 			ipro = Function(
 				source = 3,
 				accession = cols[1],
-				descript = cols[2],
-				supplement = ''
+				description = cols[2],
+				supplement = cols[3]
 			)
 			IPROS[cols[1]] = ipro
 Function.objects.bulk_create(IPROS.values())
@@ -173,8 +177,8 @@ with open(pfam_file) as fh:
 			pfam = Function(
 				source = 4,
 				accession = cols[1],
-				descript = cols[2],
-				supplement = ''
+				description = cols[2],
+				supplement = cols[3]
 			)
 			PFAMS[cols[1]] = pfam
 Function.objects.bulk_create(PFAMS.values())

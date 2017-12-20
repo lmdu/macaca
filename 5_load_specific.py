@@ -12,13 +12,13 @@ if django.VERSION >= (1, 7):
 
 #load specific snps
 from django.db import connection, transaction
-from snpdb.models import Snp, Group, Species, GroupSpec, SpecieSpec
+from snpdb.models import Snp, Group, Species, GroupSpecific, SpeciesSpecific
 print("loading specific snps")
 specific_file = os.path.join(data_dir, 'specific_table.txt')
 
 group_map = {g.name: g.id for g in Group.objects.all()}
 species_map = {s.taxonomy: s.id for s in Species.objects.all()}
-snp_map = {("chr%s" % v.chrom_id, v.position): v.id  for v in Snp.objects.all()}
+snp_map = {("chr%s" % v.chromosome_id, v.position): v.id  for v in Snp.objects.all()}
 
 group_spec = []
 species_spec = []
@@ -35,5 +35,5 @@ with open(specific_file) as fh:
 
 with transaction.atomic():
 	with connection.cursor() as c:
-		c.executemany("INSERT INTO snpdb_groupspec (snp_id, group_id) VALUES (?,?)", group_spec)
-		c.executemany("INSERT INTO snpdb_speciespec (snp_id, species_id) VALUES (?,?)", species_spec)
+		c.executemany("INSERT INTO snpdb_groupspecific (snp_id, group_id) VALUES (?,?)", group_spec)
+		c.executemany("INSERT INTO snpdb_speciesspecific (snp_id, species_id) VALUES (?,?)", species_spec)

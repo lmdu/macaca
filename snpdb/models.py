@@ -85,8 +85,8 @@ class Annotation(models.Model):
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
-	gene_position = models.IntegerField(help_text="Relative position in gene")
-	feature_type = models.SmallIntegerField(choices=FEATURE_TYPES, help_text="Gene features")
+	gene_pos = models.IntegerField(help_text="Relative position in gene")
+	feature = models.SmallIntegerField(choices=FEATURE_TYPES, help_text="Gene features")
 
 class Comment(models.Model):
 	MUTATION_TYPES = (

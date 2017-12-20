@@ -103,7 +103,7 @@ with open(gene_file) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
 		gene = Gene(
-			ensembl_id = cols[1],
+			ensembl = cols[1],
 			name = cols[2],
 			description = cols[-1],
 			biotype = biotypes[cols[3]],
@@ -116,7 +116,7 @@ Gene.objects.bulk_create(genes)
 
 #load transcript information
 print("load reference transcript information")
-gene_mapping = {g.ensembl_id: g for g in Gene.objects.all()}
+gene_mapping = {g.ensembl: g for g in Gene.objects.all()}
 
 from snpdb.models import Transcript
 transcripts = []
@@ -125,12 +125,12 @@ with open(transcript_file) as fh:
 	for line in fh:
 		cols = line.strip('\n').split('\t')
 		transcript = Transcript(
-			ensembl_id = cols[1],
+			ensembl = cols[1],
 			protein = cols[6],
 			start = int(cols[3]),
 			end = int(cols[4]),
 			strand = cols[5],
-			parent = gene_mapping[cols[2]]
+			gene = gene_mapping[cols[2]]
 		)
 		transcripts.append(transcript)
 Transcript.objects.bulk_create(transcripts)
