@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template import defaultfilters
+#from django.contrib import humanize
+#from django.template import defaultfilters
 from django.urls import reverse
 
 from jinja2 import Environment
@@ -29,10 +30,11 @@ def environment(**options):
 	env.globals.update({
 		'static': staticfiles_storage.url,
 		'url': reverse,
-		'djfilters': defaultfilters,
+		#'djfilters': defaultfilters,
 	})
 	env.filters['format_codon'] = format_codon
 	env.filters['format_seq'] = format_seq
 	env.filters['species_code'] = species_code
+	#env.filters['humanize'] = humanize
 	return env
 

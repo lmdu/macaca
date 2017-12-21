@@ -240,7 +240,7 @@ with open(snp_file) as fh:
 					if ref_aa == alt_aa:
 						mutation = 1
 					else:
-						mutation = 0
+						mutation = 2
 					
 					record = [cols[0], pos, locus.transcript, tpos, ref_codon, codon_pos, alt_codon, ref_aa, alt_aa, protein_pos, mutation]
 
@@ -251,15 +251,23 @@ with open(snp_file) as fh:
 					tpos = calc_trasncript_relative_position(locus.transcript, pos)
 					strand = transcripts[locus.transcript].strand
 					if strand == '+':
-						codon_pos = pos - cds[locus.transcript][-1][-1]
+						codon_pos = pos - locus.start + 1
 					else:
-						codon_pos = 4 - (cds[locus.transcript][-1][0] - pos)
+						codon_pos = locus.end - pos + 1
 
-					if codon_pos == 1:
+					codon_tmp_pos = codon_pos
+					if strand == '-':
+						if codon_pos == 1:
+							codon_tmp_pos = 3
+						elif codon_pos == 3:
+							codon_tmp_pos = 1
+
+
+					if codon_tmp_pos == 1:
 						codon = cols[2] + cols[5][:2]
-					elif codon_pos == 2:
+					elif codon_tmp_pos == 2:
 						codon = cols[4][-1] + cols[2] + cols[5][0]
-					elif codon_pos == 3:
+					elif codon_tmp_pos == 3:
 						codon = cols[4][-2:] + cols[2]
 
 					if strand == '-':

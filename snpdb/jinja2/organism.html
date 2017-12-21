@@ -23,7 +23,7 @@
 			<td>{{s.species.common}}</td>
 			<td><a href="{{ url('group', kwargs={'gid':s.species.group.id}) }}">{{s.species.group.name}}</a></td>
 			<td>{{s.location}}</td>
-			<td>{{s.variant_set.count()}}</td>
+			<td>{{s.variants}}</td>
 		</tr>
 		{% endfor %}
 	</tbody>

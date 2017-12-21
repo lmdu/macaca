@@ -120,7 +120,7 @@ def search(request):
 		mutation = int(request.GET.get('mutation', 0))
 	)
 
-	snps = Variant.objects.filter(snp__chromosome=chr_id, snp__position__gte=start, snp__position__lte=end)
+	snps = Variant.objects.filter(snp__chromosome=chr_id).filter(snp__position__range=(start, end))
 
 	if paras['sample']:
 		snps = snps.filter(individual=paras['sample'])
