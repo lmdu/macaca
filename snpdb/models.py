@@ -120,7 +120,7 @@ class Function(models.Model):
 		(4, 'InterPro')
 	)
 	source = models.SmallIntegerField(choices=FUNC_TYPES, help_text="The function source database name")
-	accession = models.CharField(max_length=10, help_text="Functional database accession id")
+	accession = models.CharField(max_length=15, help_text="Functional database accession id")
 	description = models.CharField(max_length=200, help_text="Function description")
 	supplement = models.CharField(max_length=80, help_text="Other information")
 

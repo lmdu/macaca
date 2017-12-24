@@ -23,7 +23,8 @@ genes = {g.ensembl:g.id for g in Gene.objects.all()}
 transcripts = {t.ensembl:t.id for t in Transcript.objects.all()}
 
 with connection.cursor() as c:
-	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")}
+	c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")
+	snps = {(row[2], row[1]): row[0] for row in c}
 
 gannots = []
 tannots = []
@@ -42,9 +43,9 @@ with transaction.atomic():
 				else:
 					gannots.append((None, int(cols[3]), int(cols[4]), genes[cols[2]], snp))
 
-		c.executemany("INSERT INTO snpdb_annotation VALUES (?,?,?,?,?)", gannots)
-		c.executemany("INSERT INTO snpdb_comment VALUES (?,?,?,?,?,?,?,?,?,?,?)", tannots)
-		c.executemany("INSERT INTO snpdb_mutation VALUES (?,?,?)", mutations)
+		c.executemany("INSERT INTO snpdb_annotation VALUES (%s,%s,%s,%s,%s)", gannots)
+		c.executemany("INSERT INTO snpdb_comment VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", tannots)
+		c.executemany("INSERT INTO snpdb_mutation VALUES (%s,%s,%s)", mutations)
 
 #load genes
 from snpdb.models import Gene

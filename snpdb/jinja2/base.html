@@ -2,12 +2,13 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Macaca SNP Database</title>
+	<title>{% block title %}{% endblock %}</title>
 	<script src="{{ static('jquery-3.2.1.min.js') }}"></script>
 	<script src="{{ static('semantic/semantic.min.js') }}"></script>
-  <script src="{{ static('action.js') }}"></script>
 	<link rel="stylesheet" href="{{ static('semantic/semantic.min.css') }}">
-	<link rel="stylesheet" href="{{ static('style.css') }}">
+  {% block head %}{% endblock %}
+	<script src="{{ static('action.js') }}"></script>
+  <link rel="stylesheet" href="{{ static('style.css') }}">
 </head>
 <body>
 <div class="ui brown attached inverted segment">
@@ -20,7 +21,7 @@
 			<a class="item {% if urlname=='variants' %} active {% endif %}" href="{{ url('variants') }}">Variants</a>
 			<a class="item {% if urlname=='organism' %} active {% endif %}" href="{{ url('organism') }}">Organism</a>
 			<a class="item {% if urlname=='specific' %} active {% endif %}" href="{{ url('specific') }}">Specific SNPs</a>
-      <a class="item" href="">Retrieve</a>
+      <a class="item {% if urlname=='retrieve' %} active {% endif %}" href="{{ url('retrieve') }}">Retrieve</a>
 			<a class="item" href="">Help</a>
 			<div class="right menu">
 				<div class="item">
@@ -97,4 +98,6 @@
 </div>
 
 </body>
+{% block footer %}{% endblock %}
+
 </html>

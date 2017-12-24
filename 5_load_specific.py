@@ -35,5 +35,5 @@ with open(specific_file) as fh:
 
 with transaction.atomic():
 	with connection.cursor() as c:
-		c.executemany("INSERT INTO snpdb_groupspecific (snp_id, group_id) VALUES (?,?)", group_spec)
-		c.executemany("INSERT INTO snpdb_speciesspecific (snp_id, species_id) VALUES (?,?)", species_spec)
+		c.executemany("INSERT INTO snpdb_groupspecific (snp_id, group_id) VALUES (%s,%s)", group_spec)
+		c.executemany("INSERT INTO snpdb_speciesspecific (snp_id, species_id) VALUES (%s,%s)", species_spec)

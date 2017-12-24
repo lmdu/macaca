@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block main %}
 <h2 class="ui brown header">
-	MACSNP{{"%02d%02d%08d"|format(snp.individual.id,snp.snp.chromosome.id,snp.snp.id)}}
+	MACSNP{{"%03d%09d"|format(snp.individual.id,snp.snp.id)}}
 </h2>
 
 <h3 class="ui header">Individual Information</h3>
@@ -57,7 +57,7 @@
 		{% for gene in genes %}
 		<tr>
 			<td><a class="ui item" href="">{{ gene.gene.ensembl }}</a></td>
-			<td>{{ gene.gene.name }}</td>
+			<td><a data-tooltip="{{ gene.gene.description }}">{{ gene.gene.name }}</a></td>
 			<td>{{ gene.gene.get_biotype_display() }}</td>
 			<td>{{ gene.gene_pos }}</td>
 			<td>{{ gene.gene.strand }}</td>
@@ -188,9 +188,34 @@
 	</tbody>
 </table>
 
-
 {% endif %}
 {% endfor %}
 
+<h3 class="ui header">SNPs of other individuals in this position</h3>
+<table class="ui compact table">
+	<thead>
+		<tr><th>SNP ID</th><th>Individual</th><th>Species</th><th>Group</th><th>Location</th><th>Genotype</th></tr>
+	</thead>
+	<tbody>
+		{% for other in others %}
+		<tr>
+			<td><a href="{{ url('snpid', kwargs={'indiv': '%03d'|format(other.individual.id), 'sid':'%09d'|format(other.snp.id)}) }}">MACSNP{{"%03d%09d"|format(other.individual.id,other.snp.id)}}</a></td>
+			<td>{{ other.individual.code }}</td>
+			<td>{{ other.individual.species.common }}</td>
+			<td>{{ other.individual.species.group.name }}</td>
+			<td>{{ other.individual.location }}</td>
+			<td>
+				{% if other.genotype == 1 %}
+				<span class="genotype homo">homozygote</span>
+				{% else %}
+				<span class="genotype hetero">heterozygote</span>
+				{% endif %}
+			</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="5">N/A</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
 
 {% endblock %}

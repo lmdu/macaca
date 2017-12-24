@@ -1,8 +1,96 @@
-{% urlname="retrieve" %}
-{% extend "base.html" %}
+{% set urlname="retrieve" %}
+{% extends "base.html" %}
 
 {% block main %}
+<form class="ui form">
+<div class="ui dividing header">Chromosome and Location Region</div>
+<div class="fields">
+	<div class="field">
+		<label>Chromosome:</label>
+		<select class="ui selection dropdown">
+			{% for i in range(1, 21) %}
+			<option value="{{ i }}">chr{{ i }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="field">
+		<label>Start:</label>
+		<input type="number" name="start">
+	</div>
+	<div class="field">
+		<label>End:</label>
+		<input type="number" name="end">
+	</div>
+</div>
+<div class="ui dividing header">Individual</div>
+<div class="inline fields">
+	{% for individual in individuals[:10] %}
+	<div class="field">
+		<div class="ui radio checkbox">
+			<input type="radio" name="individual" value="{{ individual.id }}">
+			<label>{{ individual.code }}</label>
+		</div>
+	</div>
+	{% endfor %}
+</div>
+<div class="inline fields">
+	{% for individual in individuals[10:] %}
+	<div class="field">
+		<div class="ui radio checkbox">
+			<input type="radio" name="individual" value="{{ individual.id }}">
+			<label>{{ individual.code }}</label>
+		</div>
+	</div>
+	{% endfor %}
+</div>
 
+
+<div class="ui dividing header">SNP Attributes</div>
+<div class="fields">
+	<div class="field">
+		<label>SNP Location:</label>
+		<select class="ui selection dropdown">
+			<option value="0">All</option>
+			<option value="1">CDS</option>
+			<option value="2">exon</option>
+			<option value="4">intron</option>
+			<option value="3">3'UTR</option>
+			<option value="5">5'UTR</option>
+		</select>
+	</div>
+	<div class="field">
+		<label>Genotype:</label>
+		<select class="ui selection dropdown">
+			<option value="0">All</option>
+			<option value="1">Homogyzote</option>
+			<option value="2">Heterogyzote</option>
+		</select>
+	</div>
+	<div class="field">
+		<label>Mutation:</label>
+		<select class="ui selection dropdown">
+			<option value="0">All</option>
+			<option value="1">Synonymous</option>
+			<option value="2">Non-synonymous</option>
+		</select>
+	</div>
+</div>
+
+<div class="ui dividing header">Associated Gene</div>
+<div class="fields">
+	<div class="field">
+		<label>Ensembl Gene ID</label>
+		<input type="text" name="gene">
+	</div>
+</div>
+
+<div class="fields">
+	<div class="field">
+		<button type="submit" value="submit" class="ui brown button">Search</button>
+	</div>
+</div>
+
+</form>
 
 
 {% endblock %}

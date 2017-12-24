@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div id="gbrowser"></div>
+{% endblock %}
+
+{% block footer %}
+<link rel="stylesheet" type="text/css" href="{{ static('pileup.css') }}">
+<script type="text/javascript" src="{{ static('pileup.min.js')}}"></script>
+<script type="text/javascript">
+	var box = document.getElementById('gbrowser');
+	var p = pileup.create(box, {
+		range: {contig: 'chr1', start: 7512384, stop: 7512544},
+		tracks: [{
+			viz: pileup.viz.genome(),
+			isReference: true,
+			data: pileup.formats.twoBit({
+				url: '{{ static("data/rheMac2.2bit") }}'
+			}),
+			name: 'Reference'
+		}]
+	});
+</script>
+{% endblock %}

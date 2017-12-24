@@ -24,7 +24,8 @@ genotypes = {'1/1': 1, '0/1': 2}
 species = {s.code: s.id for s in Individual.objects.all()}
 
 with connection.cursor() as c:
-	snps = {(row[2], row[1]): row[0] for row in c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")}
+	c.execute("SELECT id, position, chromosome_id FROM snpdb_snp")
+	snps = {(row[2], row[1]): row[0] for row in c}
 
 variants = []
 progress = 0
@@ -44,10 +45,10 @@ with transaction.atomic():
 
 				progress += 1
 				if progress % 10000 == 0:
-					c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, individual_id) VALUES (?,?,?)", variants)
+					c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, individual_id) VALUES (%s,%s,%s)", variants)
 					variants = []
 					print("Variants: %s" % progress)
 
 		if variants:
-			c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, individual_id) VALUES (?,?,?)", variants)
+			c.executemany("INSERT INTO snpdb_variant (genotype, snp_id, individual_id) VALUES (%s,%s,%s)", variants)
 		print("Variants: %s" % progress)

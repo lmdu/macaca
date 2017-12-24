@@ -84,10 +84,12 @@ def snp(request, sid):
 	one = Variant.objects.get(id=sid)
 	genes = one.snp.annotation_set.all()
 	transcripts = one.snp.comment_set.all()
+	others = Variant.objects.filter(snp__id=one.snp.id).exclude(id=sid)
 	return render(request, 'snp.html', {
 		'snp': one,
 		'genes': genes,
-		'transcripts': transcripts
+		'transcripts': transcripts,
+		'others': others,
 	})
 
 #get snp by mac snp id
@@ -216,3 +218,13 @@ def snpspec(request, cat, cid, sid):
 		'genes': genes,
 		'transcripts': transcripts
 	})
+
+def retrieve(request):
+	individuals = Individual.objects.all()
+	return render(request, 'retrieve.html', {
+		'individuals': individuals,
+	})
+
+def pileup(request):
+	return render(request, 'pileup.html')
+	

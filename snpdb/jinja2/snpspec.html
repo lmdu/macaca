@@ -42,7 +42,7 @@
 		{% for gene in genes %}
 		<tr>
 			<td><a class="ui item" href="">{{ gene.gene.ensembl }}</a></td>
-			<td>{{ gene.gene.name }}</td>
+			<td><a data-tooltip="{{ gene.gene.description }}">{{ gene.gene.name }}</a></td>
 			<td>{{ gene.gene.get_biotype_display() }}</td>
 			<td>{{ gene.gene_pos }}</td>
 			<td>{{ gene.gene.strand }}</td>
