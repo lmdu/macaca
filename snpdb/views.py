@@ -221,10 +221,32 @@ def snpspec(request, cat, cid, sid):
 
 def retrieve(request):
 	individuals = Individual.objects.all()
+	groups = Group.objects.all()
+	species = Species.objects.all()
 	return render(request, 'retrieve.html', {
 		'individuals': individuals,
+		'groups': groups,
+		'species': species,
 	})
 
-def pileup(request):
-	return render(request, 'pileup.html')
+def pileup(request, sid):
+	snp = Snp.objects.get(id=sid)
+	variants = Variant.objects.filter(snp__id=sid)
+	header = ["#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO","FORMAT"]
+	line = [snp.chromosome.name, str(snp.position), str(snp.id), snp.reference, snp.alteration, '.', 'PASS', '.', 'GT']
+	genotypes = ['0/0', '1/1', '0/1']
+	for var in variants:
+		header.append(var.individual.code)
+		line.append(genotypes[var.genotype])
+
+	#header = "\t".join(header)
+	line = "\t".join(line)
+
+	vcf = "{1}".format(header, line)
+
+	return render(request, 'pileup.html', {
+		'vcf': vcf,
+		'chromosome': snp.chromosome.name,
+		'position': snp.position,
+	})
 	

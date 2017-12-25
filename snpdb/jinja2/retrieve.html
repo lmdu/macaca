@@ -2,12 +2,12 @@
 {% extends "base.html" %}
 
 {% block main %}
-<form class="ui form">
+<form method="get" action="{{ url('retrieve') }}" class="ui form">
 <div class="ui dividing header">Chromosome and Location Region</div>
-<div class="fields">
+<div class="three fields">
 	<div class="field">
 		<label>Chromosome:</label>
-		<select class="ui selection dropdown">
+		<select class="chromosome" class="ui selection dropdown">
 			{% for i in range(1, 21) %}
 			<option value="{{ i }}">chr{{ i }}</option>
 			{% endfor %}
@@ -22,31 +22,51 @@
 		<input type="number" name="end">
 	</div>
 </div>
-<div class="ui dividing header">Individual</div>
-<div class="inline fields">
-	{% for individual in individuals[:10] %}
+<div class="ui dividing header">Organism</div>
+<div class="three fields">
 	<div class="field">
-		<div class="ui radio checkbox">
-			<input type="radio" name="individual" value="{{ individual.id }}">
-			<label>{{ individual.code }}</label>
-		</div>
+		<label>
+			<div class="ui radio checkbox">
+				<input type="radio" name="category">
+				<label>Individual</label>
+			</div>
+		</label>
+		<select multiple="" name="individuals" class="ui selection dropdown">
+			{% for individual in individuals %}
+			<option value="{{ individual.id }}">{{ individual.code }}</option>
+			{% endfor %}
+		</select>
 	</div>
-	{% endfor %}
-</div>
-<div class="inline fields">
-	{% for individual in individuals[10:] %}
 	<div class="field">
-		<div class="ui radio checkbox">
-			<input type="radio" name="individual" value="{{ individual.id }}">
-			<label>{{ individual.code }}</label>
-		</div>
+		<label>
+			<div class="ui radio checkbox">
+				<input type="radio" name="category">
+				<label>Group Specific</label>
+			</div>
+		</label>
+		<select name="group" class="ui selection dropdown">
+			{% for group in groups %}
+			<option value="{{ group.id }}">{{ group.name }}</option>
+			{% endfor %}
+		</select>
 	</div>
-	{% endfor %}
+	<div class="field">
+		<label>
+			<div class="ui radio checkbox">
+				<input type="radio" name="category">
+				<label>Species Specific</label>
+			</div>
+		</label>
+		<select name="species" class="ui selection dropdown">
+			{% for s in species %}
+			<option value="{{ s.id }}">{{ s.common }}</option>
+			{% endfor %}
+		</select>
+	</div>
 </div>
-
 
 <div class="ui dividing header">SNP Attributes</div>
-<div class="fields">
+<div class="three fields">
 	<div class="field">
 		<label>SNP Location:</label>
 		<select class="ui selection dropdown">
@@ -68,7 +88,7 @@
 	</div>
 	<div class="field">
 		<label>Mutation:</label>
-		<select class="ui selection dropdown">
+		<select class="mutation" class="ui selection dropdown">
 			<option value="0">All</option>
 			<option value="1">Synonymous</option>
 			<option value="2">Non-synonymous</option>
@@ -77,16 +97,14 @@
 </div>
 
 <div class="ui dividing header">Associated Gene</div>
-<div class="fields">
-	<div class="field">
-		<label>Ensembl Gene ID</label>
-		<input type="text" name="gene">
-	</div>
+<div class="field">
+	<label>Ensembl Gene ID</label>
+	<input type="text" name="gene">
 </div>
 
 <div class="fields">
 	<div class="field">
-		<button type="submit" value="submit" class="ui brown button">Search</button>
+		<button type="submit" class="ui brown button">Retrieve SNPs</button>
 	</div>
 </div>
 

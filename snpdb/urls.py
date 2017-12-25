@@ -17,5 +17,5 @@ urlpatterns = [
 	re_path(r'^snp/MACSNP(?P<cat>[GS])(?P<cid>[0-9]{2})(?P<sid>[0-9]{9})/$', views.snpspec, name='snpspec'),
 	path('search/', views.search, name='search'),
 	path('retrieve/', views.retrieve, name='retrieve'),
-	path('pileup/', views.pileup, name='pileup'),
+	path('pileup/<int:sid>', views.pileup, name='pileup'),
 ]
