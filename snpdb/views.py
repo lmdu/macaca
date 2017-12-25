@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -220,14 +221,76 @@ def snpspec(request, cat, cid, sid):
 	})
 
 def retrieve(request):
-	individuals = Individual.objects.all()
-	groups = Group.objects.all()
-	species = Species.objects.all()
-	return render(request, 'retrieve.html', {
-		'individuals': individuals,
-		'groups': groups,
-		'species': species,
+	if not request.GET:
+		individuals = Individual.objects.all()
+		groups = Group.objects.all()
+		species = Species.objects.all()
+		return render(request, 'retrieve.html', {
+			'individuals': individuals,
+			'groups': groups,
+			'species': species,
+		})
+
+	
+	#print(request.GET.getlist('individuals'))
+	#return HttpResponse()
+	paras = dict(
+		page = int(request.GET.get('page', 1)),
+		records = int(request.GET.get('records', 10)),
+		chromosome = int(request.GET.get('chr')),
+		start = request.GET.get('start', 0),
+		end = request.GET.get('end', 0),
+		category = request.GET.get('category', 'individual'),
+		individuals = list(map(int,request.GET.getlist('individuals'))),
+		group = int(request.GET.get('group')),
+		species = int(request.GET.get('species')),
+		feature = int(request.GET.get('feature')),
+		genotype = int(request.GET.get('genotype')),
+		mutation = int(request.GET.get('mutation')),
+		gene = request.GET.get('gene')
+	)
+
+	paras['start'] = paras['start'] if paras['start'] else 0
+	paras['end'] = paras['end'] if paras['end'] else 0
+
+	if paras['category'] == 'group':
+		snps = GroupSpecific.objects.filter(group=paras['group'], snp__chromosome=paras['chromosome'])
+	elif paras['category'] == 'species':
+		snps = SpeciesSpecific.objects.filter(species=paras['species'], snp__chromosome=paras['chromosome'])	
+	elif paras['category'] == 'individual':
+		snps = Variant.objects.filter(snp__chromosome=paras['chromosome'])
+		if paras['individuals']:
+			print(paras['individuals'])
+			snps = snps.filter(individual__in=paras['individuals'])
+		
+		if paras['genotype']:
+			snps = snps.filter(genotype=paras['genotype'])
+
+	if paras['start'] and paras['end']:
+		snps = snps.filter(snp__position__range=(paras['start'], paras['end']))
+
+	if paras['feature']:
+		snps = snps.filter(snp__annotation__feature=paras['feature'])
+
+	if paras['mutation']:
+		snps = snps.filter(snp__mutation__synonymous=paras['mutation'])
+
+	if paras['gene']:
+		snps = snps.filter(snp__annotation__gene__ensembl=paras['gene'])
+
+	paginator = Paginator(snps, paras['records'])
+	try:
+		snps = paginator.page(paras['page'])
+	except PageNotAnInteger:
+		snps = paginator.page(1)
+	except EmptyPage:
+		snps = paginator.page(paginator.num_pages)
+
+	return render(request, 'download.html', {
+		'snps': snps,
+		'paras': paras,
 	})
+
 
 def pileup(request, sid):
 	snp = Snp.objects.get(id=sid)
