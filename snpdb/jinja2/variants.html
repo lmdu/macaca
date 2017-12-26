@@ -37,8 +37,6 @@
 		{% for m in mutations %}
 		<a class="ui mutations label {% if paras.mutation==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ m }}</a>
 		{% endfor %}
-
-
 	</div>
 </div>
 
@@ -74,11 +72,6 @@
 <table class="ui celled table">
 	<thead>
 		<tr>
-			<th>
-				<div class="ui master fitted checkbox">
-					<input type="checkbox" name="" class="hidden">
-				</div>
-			</th>
 			<th>SNP ID</th>
 			<th>Position</th>
 			<th>Individual</th>
@@ -90,11 +83,6 @@
 	<tbody>
 		{% for snp in snps %}
 		<tr>
-			<td>
-				<div class="ui child fitted checkbox">
-					<input type="checkbox" name="" class="hidden">
-				</div>
-			</td>
 			<td><a href="{{ url('snpid', kwargs={'indiv': '%03d'|format(snp.individual.id), 'sid':'%09d'|format(snp.snp.id)}) }}">MACSNP{{"%03d%09d"|format(snp.individual.id,snp.snp.id)}}</a></td>
 			<td>{{snp.snp.chromosome.name}}: {{snp.snp.position}}</td>
 			<td>{{snp.individual.code}}</td>
@@ -114,40 +102,37 @@
 
 	</tbody>
 	<tfoot>
-		<tr><th colspan="7">
-		<div class="ui download left labeled button">
-			<div class="ui basic label">0</div>
-			<button class="ui small button"><i class="icon download"></i> Download</button>
-		</div>
+		<tr>
+			<th colspan="7">
+				<div class="ui pager right floated pagination menu">
+					{% if snps.has_previous() %}
+					<a class="icon item" data-num="{{ snps.previous_page_number() }}">
+						<i class="left chevron icon"></i>
+					</a>
+					{% endif %}
 
-		<div class="ui pager right floated pagination menu">
-			{% if snps.has_previous() %}
-			<a class="icon item" data-num="{{ snps.previous_page_number() }}">
-				<i class="left chevron icon"></i>
-			</a>
-			{% endif %}
+					{% for i in range(3, 0, -1) %}
+					{% if snps.number - i > 0 %}
+					<a class="item" data-num="{{snps.number-i}}">{{snps.number-i}}</a>
+					{% endif %}
+					{% endfor %}
+					
+					<span class="item active" data-num="{{snps.number}}">{{snps.number}}</span>
+					
+					{% for i in range(1, 4) %}
+					{% if snps.number + i <= snps.paginator.num_pages %}
+					<a class="item" data-num="{{snps.number+i}}">{{snps.number+i}}</a>
+					{% endif %}
+					{% endfor %}
 
-			{% for i in range(3, 0, -1) %}
-			{% if snps.number - i > 0 %}
-			<a class="item" data-num="{{snps.number-i}}">{{snps.number-i}}</a>
-			{% endif %}
-			{% endfor %}
-			
-			<span class="item active" data-num="{{snps.number}}">{{snps.number}}</span>
-			
-			{% for i in range(1, 4) %}
-			{% if snps.number + i <= snps.paginator.num_pages %}
-			<a class="item" data-num="{{snps.number+i}}">{{snps.number+i}}</a>
-			{% endif %}
-			{% endfor %}
-
-			{% if snps.has_next() %}
-			<a class="icon item" data-num="{{ snps.next_page_number() }}">
-				<i class="right chevron icon"></i>
-			</a>
-			{% endif %}
-		</div>
-	</th></tr>
+					{% if snps.has_next() %}
+					<a class="icon item" data-num="{{ snps.next_page_number() }}">
+						<i class="right chevron icon"></i>
+					</a>
+					{% endif %}
+				</div>
+			</th>
+		</tr>
 	</tfoot>
 </table>
 

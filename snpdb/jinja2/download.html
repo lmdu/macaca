@@ -3,24 +3,26 @@
 
 {% block main %}
 <form action="{{ url('retrieve') }}" method="get" id="snps-filter">
-<input type="hidden" id="page" name="page" value="{{ paras.page }}">
-<input type="hidden" name="chr" value="{{ paras.chromosome }}">
-<input type="hidden" name="start" value="{{ paras.start }}">
-<input type="hidden" name="end" value="{{ paras.end }}">
-<input type="hidden" name="category" value="{{ paras.category }}">
-<input type="hidden" name="group" value="{{ paras.group }}">
-<input type="hidden" name="species" value="{{ paras.species }}">
-{% for individual in paras.individuals %}
-<input type="hidden" name="individuals" value="{{ individual }}">
-{% endfor %}
-<input type="hidden" name="feature" value="{{ paras.feature }}">
-<input type="hidden" name="genotype" value="{{ paras.genotype }}">
-<input type="hidden" name="mutation" value="{{ paras.mutation }}">
-<input type="hidden" name="gene" value="{{ paras.gene }}">
+	<input type="hidden" id="page" name="page" value="{{ paras.page }}">
+	<input type="hidden" id="records" name="records" value="{{ paras.records }}">
+	<input type="hidden" name="chr" value="{{ paras.chromosome }}">
+	<input type="hidden" name="start" value="{{ paras.start }}">
+	<input type="hidden" name="end" value="{{ paras.end }}">
+	<input type="hidden" name="category" value="{{ paras.category }}">
+	<input type="hidden" name="group" value="{{ paras.group }}">
+	<input type="hidden" name="species" value="{{ paras.species }}">
+	{% for individual in paras.individuals %}
+	<input type="hidden" name="individuals" value="{{ individual }}">
+	{% endfor %}
+	<input type="hidden" name="feature" value="{{ paras.feature }}">
+	<input type="hidden" name="genotype" value="{{ paras.genotype }}">
+	<input type="hidden" name="mutation" value="{{ paras.mutation }}">
+	<input type="hidden" name="gene" value="{{ paras.gene }}">
+</form>
 <div class="ui grid">
 	<div class="eight wide column">
 		Show
-		<select name="records" class="ui numperpage compact selection dropdown">
+		<select class="ui numperpage compact selection dropdown">
 			{% set pages=[10, 25, 50, 100] %}
 			{% for v in pages %}
 			<option value="{{v}}" {% if paras.records==v %} selected="selected" {% endif %}>{{v}}</option>
@@ -37,6 +39,9 @@
 	</div>
 </div>
 
+<form action="{{ url('download') }}" method="post">
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+<input type="hidden" name="category" value="{{ paras.category }}">
 <table class="ui celled table">
 	<thead>
 		<tr>
@@ -58,16 +63,16 @@
 		<tr>
 			<td>
 				<div class="ui child fitted checkbox">
-					<input type="checkbox" name="" class="hidden">
+					<input type="checkbox" name="snps" value="{{ snp.snp.id }}" class="hidden">
 				</div>
 			</td>
 			<td>
 				{% if paras.category == "individual" %}
 				<a href="{{ url('snpid', kwargs={'indiv': '%03d'|format(snp.individual.id), 'sid':'%09d'|format(snp.snp.id)}) }}">MACSNP{{"%03d%09d"|format(snp.individual.id,snp.snp.id)}}</a>
 				{% elif paras.category == "group" %}
-				<a href="{{ url('snpid', kwargs={'cat':'G', 'cid': '%02d'|format(snp.group.id), 'sid':'%09d'|format(snp.snp.id)}) }}">MACSNP{{"%03d%09d"|format(snp.individual.id,snp.snp.id)}}</a>
+				<a href="{{ url('snpspec', kwargs={'cat':'G', 'cid': '%02d'|format(snp.group.id), 'sid':'%09d'|format(snp.snp.id)}) }}">MACSNP{{"%03d%09d"|format(snp.group.id,snp.snp.id)}}</a>
 				{% elif paras.category == "species" %}
-				<a href="{{ url('snpid', kwargs={'cat':'S', 'cid': '%02d'|format(snp.group.id), 'sid':'%09d'|format(snp.snp.id)}) }}">MACSNP{{"%03d%09d"|format(snp.individual.id,snp.snp.id)}}</a>
+				<a href="{{ url('snpspec', kwargs={'cat':'S', 'cid': '%02d'|format(snp.species.id), 'sid':'%09d'|format(snp.snp.id)}) }}">MACSNP{{"%03d%09d"|format(snp.species.id,snp.snp.id)}}</a>
 				{% endif %}
 			</td>
 			<td>{{snp.snp.chromosome.name}}: {{snp.snp.position}}</td>
@@ -100,43 +105,40 @@
 
 	</tbody>
 	<tfoot>
-		<tr><th colspan="7">
-		<div class="ui download left labeled button">
-			<div class="ui basic label">0</div>
-			<button class="ui small button"><i class="icon download"></i> Download</button>
-		</div>
+		<tr>
+			<th colspan="7">
+				<button class="ui brown button"><i class="icon download"></i> Download</button>
+				
+				<div class="ui pager right floated pagination menu">
+					{% if snps.has_previous() %}
+					<a class="icon item" data-num="{{ snps.previous_page_number() }}">
+						<i class="left chevron icon"></i>
+					</a>
+					{% endif %}
 
-		<div class="ui pager right floated pagination menu">
-			{% if snps.has_previous() %}
-			<a class="icon item" data-num="{{ snps.previous_page_number() }}">
-				<i class="left chevron icon"></i>
-			</a>
-			{% endif %}
+					{% for i in range(3, 0, -1) %}
+					{% if snps.number - i > 0 %}
+					<a class="item" data-num="{{snps.number-i}}">{{snps.number-i}}</a>
+					{% endif %}
+					{% endfor %}
+					
+					<span class="item active" data-num="{{snps.number}}">{{snps.number}}</span>
+					
+					{% for i in range(1, 4) %}
+					{% if snps.number + i <= snps.paginator.num_pages %}
+					<a class="item" data-num="{{snps.number+i}}">{{snps.number+i}}</a>
+					{% endif %}
+					{% endfor %}
 
-			{% for i in range(3, 0, -1) %}
-			{% if snps.number - i > 0 %}
-			<a class="item" data-num="{{snps.number-i}}">{{snps.number-i}}</a>
-			{% endif %}
-			{% endfor %}
-			
-			<span class="item active" data-num="{{snps.number}}">{{snps.number}}</span>
-			
-			{% for i in range(1, 4) %}
-			{% if snps.number + i <= snps.paginator.num_pages %}
-			<a class="item" data-num="{{snps.number+i}}">{{snps.number+i}}</a>
-			{% endif %}
-			{% endfor %}
-
-			{% if snps.has_next() %}
-			<a class="icon item" data-num="{{ snps.next_page_number() }}">
-				<i class="right chevron icon"></i>
-			</a>
-			{% endif %}
-		</div>
-	</th></tr>
+					{% if snps.has_next() %}
+					<a class="icon item" data-num="{{ snps.next_page_number() }}">
+						<i class="right chevron icon"></i>
+					</a>
+					{% endif %}
+				</div>
+			</th>
+		</tr>
 	</tfoot>
 </table>
-
 </form>
-
 {% endblock %}

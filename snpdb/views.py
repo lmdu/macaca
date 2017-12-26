@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Individual, Variant, Chromosome, Species, Snp, Group
-from .models import GroupSpecific, SpeciesSpecific
+from .models import GroupSpecific, SpeciesSpecific, Annotation
 
 # Create your views here.
 def index(request):
@@ -250,8 +250,8 @@ def retrieve(request):
 		gene = request.GET.get('gene')
 	)
 
-	paras['start'] = paras['start'] if paras['start'] else 0
-	paras['end'] = paras['end'] if paras['end'] else 0
+	paras['start'] = int(paras['start']) if paras['start'] else 0
+	paras['end'] = int(paras['end']) if paras['end'] else 0
 
 	if paras['category'] == 'group':
 		snps = GroupSpecific.objects.filter(group=paras['group'], snp__chromosome=paras['chromosome'])
@@ -259,8 +259,8 @@ def retrieve(request):
 		snps = SpeciesSpecific.objects.filter(species=paras['species'], snp__chromosome=paras['chromosome'])	
 	elif paras['category'] == 'individual':
 		snps = Variant.objects.filter(snp__chromosome=paras['chromosome'])
+
 		if paras['individuals']:
-			print(paras['individuals'])
 			snps = snps.filter(individual__in=paras['individuals'])
 		
 		if paras['genotype']:
@@ -278,6 +278,8 @@ def retrieve(request):
 	if paras['gene']:
 		snps = snps.filter(snp__annotation__gene__ensembl=paras['gene'])
 
+	snps = snps.order_by('pk')
+
 	paginator = Paginator(snps, paras['records'])
 	try:
 		snps = paginator.page(paras['page'])
@@ -291,6 +293,40 @@ def retrieve(request):
 		'paras': paras,
 	})
 
+def download(request):
+	snp_ids = request.POST.getlist('snps')
+	category = request.POST.get('category')
+
+	if category == 'group':
+		snps = GroupSpecific.objects.filter(snp__in=snp_ids)
+	elif category == 'species':
+		snps = SpeciesSpecific.objects.filter(snp__in=snp_ids)
+	else:
+		snps = Variant.objects.filter(snp__in=snp_ids)
+
+	contents = ["SNP ID\tChromosome\tPosition\tReference\tAlteration\t%s\tGenotype\t5'flank\t3'flank\n" % category]
+	out_formats = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
+	for snp in snps:
+		if category == 'group':
+			sid = "MACSNPG%02d%09d" % (snp.group.id, snp.snp.id)
+			organism = snp.group.name
+			genotype = 'homozygote'
+		elif category == 'species':
+			sid = "MACSNPS%02d%09d" % (snp.species.id, snp.snp.id)
+			organism = snp.species.common
+			genotype = 'homozygote'
+		else:
+			sid = "MACSNP%03d%09d" % (snp.individual.id, snp.snp.id)
+			organism = snp.individual.code
+			genotype = 'homozygote' if snp.genotype == 1 else 'heterozygote'
+		
+		contents.append(out_formats % (
+			sid, snp.snp.chromosome.name, snp.snp.position,
+			snp.snp.reference, snp.snp.alteration, organism,
+			genotype, snp.snp.five, snp.snp.three
+		))
+
+	return HttpResponse('<pre>'+''.join(contents)+'</pre>')
 
 def pileup(request, sid):
 	snp = Snp.objects.get(id=sid)

@@ -52,6 +52,7 @@ $('.ui.pager a').click(function(e){
 });
 
 $('.ui.numperpage').change(function(){
+	$('#records').val($(this).dropdown('get value'));
 	$('#snps-filter').submit();
 });
 
@@ -86,28 +87,14 @@ $('i.search.icon').click(function(){
 $('.ui.master.checkbox').checkbox({
 	onChecked: function(){
 		$('.ui.child.checkbox').checkbox('check');
-		$('.ui.download .label').text($('.ui.numperpage').dropdown('get value'));
 	},
 	onUnchecked: function(){
 		$('.ui.child.checkbox').checkbox('uncheck');
-		$('.ui.download .label').text(0);
 	}
 });
 
 $('.ui.child.checkbox').checkbox({
 	fireOnInit: true,
-	onChecked: function(){
-		var count = parseInt($('.ui.download .label').text());
-		$('.ui.download .label').text(count+1);
-	},
-	onUnchecked: function(){
-		var count = parseInt($('.ui.download .label').text());
-		count = count - 1;
-		if(count < 0){
-			count = 0;
-		}
-		$('.ui.download .label').text(count);
-	},
 	onChange: function(){
 		var allChecked = true;
 		var allUnchecked = true;
