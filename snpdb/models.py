@@ -5,7 +5,7 @@ from django.db import models
 
 # Create your models here.
 class Chromosome(models.Model):
-	name = models.CharField(max_length=10, help_text="Chromosome name, chr1-chr20")
+	name = models.CharField(max_length=5, help_text="Chromosome name, chr1-chr20")
 	size = models.BigIntegerField(help_text = "Chromosome sequence length")
 
 class Group(models.Model):
@@ -34,20 +34,21 @@ class Individual(models.Model):
 
 class Snp(models.Model):
 	chromosome = models.ForeignKey(Chromosome, on_delete=models.CASCADE)
-	position = models.BigIntegerField(help_text="Position in chromosome sequence")
+	position = models.BigIntegerField(db_index=True, help_text="Position in chromosome sequence")
 	reference = models.CharField(max_length=1, help_text="Reference base")
 	alteration = models.CharField(max_length=1, help_text="SNP alteration base")
 	five = models.CharField(max_length=50, help_text="Five flanking sequence 50 bp")
 	three = models.CharField(max_length=50, help_text="Three flanking sequence 50 bp")
 
 class Variant(models.Model):
+	id = models.BigAutoField(primary_key=True)
 	GENOTYPES = (
 		(1, 'Homozygote'),
 		(2, 'Heterozygote')
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	individual = models.ForeignKey(Individual, on_delete=models.CASCADE)
-	genotype = models.SmallIntegerField(choices=GENOTYPES, help_text="Alteration genotype")
+	genotype = models.SmallIntegerField(choices=GENOTYPES, db_index=True, help_text="Alteration genotype")
 
 class Gene(models.Model):
 	CODING_TYPES = (
@@ -76,6 +77,7 @@ class Transcript(models.Model):
 	strand = models.CharField(max_length=1, help_text="Transcript strand")
 
 class Annotation(models.Model):
+	'''Gene annotation'''
 	FEATURE_TYPES = (
 		(1, 'CDS'),
 		(2, 'Exon'),
@@ -86,9 +88,13 @@ class Annotation(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	gene_pos = models.IntegerField(help_text="Relative position in gene")
-	feature = models.SmallIntegerField(choices=FEATURE_TYPES, help_text="Gene features")
+	feature = models.SmallIntegerField(choices=FEATURE_TYPES, db_index=True, help_text="Gene features")
+
+	class Meta:
+		index_together = ['snp', 'feature']
 
 class Comment(models.Model):
+	'''Transcript annotation'''
 	MUTATION_TYPES = (
 		(1, 'Non-synonymous'),
 		(2, 'Synonymous'),
@@ -102,17 +108,22 @@ class Comment(models.Model):
 	ref_aa = models.CharField(max_length=10, help_text="The reference amino acid for SNP codon")
 	alt_aa = models.CharField(max_length=10, help_text="The alteration amino acid for SNP codon")
 	protein_pos = models.IntegerField(help_text="Relative position of codon in protein")
-	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, help_text="Mutation type")
+	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, db_index=True, help_text="Mutation type")
 
 class Mutation(models.Model):
+	'''Synonymous or non-synonymous mutations'''
 	MUTATION_TYPES = (
 		(1, 'Non-synonymous'),
 		(2, 'Synonymous'),
 	)
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
-	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, help_text="Mutation type")
+	synonymous = models.SmallIntegerField(choices=MUTATION_TYPES, db_index=True, help_text="Mutation type")
+
+	class Meta:
+		index_together = ['snp', 'synonymous']
 
 class Function(models.Model):
+	'''Functional Terms'''
 	FUNC_TYPES = (
 		(1, 'GO'),
 		(2, 'KEGG'),
@@ -125,14 +136,24 @@ class Function(models.Model):
 	supplement = models.CharField(max_length=80, help_text="Other information")
 
 class Funcannot(models.Model):
+	'''Functional annotations'''
 	gene = models.ForeignKey(Gene, on_delete=models.CASCADE)
 	function = models.ForeignKey(Function, on_delete=models.CASCADE)
+
+	class Meta:
+		index_together = ['gene', 'function']
 
 class GroupSpecific(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
+	class Meta:
+		index_together = ['snp', 'group']
+
 class SpeciesSpecific(models.Model):
 	snp = models.ForeignKey(Snp, on_delete=models.CASCADE)
 	species = models.ForeignKey(Species, on_delete=models.CASCADE)
+
+	class Meta:
+		index_together = ['snp', 'species']
 	

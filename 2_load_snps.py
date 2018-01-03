@@ -27,7 +27,7 @@ with transaction.atomic():
 		with open(snp_file) as fh:
 			for line in fh:
 				cols = line.strip().split('\t')
-				snps.append((0, int(cols[1]), cols[2], cols[3], cols[4], cols[5], chromos[cols[0]]))
+				snps.append((None, int(cols[1]), cols[2], cols[3], cols[4], cols[5], chromos[cols[0]]))
 				progress += 1
 				if progress % 100000 == 0:
 					c.executemany("INSERT INTO snpdb_snp VALUES (%s,%s,%s,%s,%s,%s,%s)", snps)
