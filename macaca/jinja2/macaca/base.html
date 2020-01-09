@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>{% block title %}{% endblock %}</title>
+	<script src="{{ static('macaca/jquery-3.2.1.min.js') }}"></script>
+	<script src="{{ static('macaca/semantic/semantic.min.js') }}"></script>
+	<link href="{{ static('macaca/semantic/semantic.min.css') }}" rel="stylesheet">
+	<script src="{{ static('macaca/action.js') }}"></script>
+  <link rel="stylesheet" href="{{ static('macaca/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="ui brown inverted attached secondary huge menu">
+		<div class="ui container">
+			<div class="header">
+				<a href="{{ url('macsnvdb:home') }}"><img src="{{ static('macaca/images/logo.png') }}" width="190" height="80"></a>
+			</div>
+      <div class="right menu">
+  			<a class="item {% if urlname=='home' %} active {% endif %}" href="{{ url('macsnvdb:home') }}">Home</a>
+        <div class="ui dropdown item">
+          Browse<i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="{{ url('macsnvdb:isnps') }}">Individual SNVs</a>
+            <a class="item" href="{{ url('macsnvdb:specific') }}">Specific SNVs</a>
+            <a class="item" href="{{ url('macsnvdb:nrsnps') }}">Non-redundant SNVs</a>
+          </div>
+        </div>
+        <div class="ui dropdown item">
+          Genes<i class="dropdown icon"></i>
+          <div class="menu">
+            <a href="{{ url('macsnvdb:diseases') }}" class="item">Disease associated gene</a>
+            <a href="{{ url('macsnvdb:drugs') }}" class="item">Drug target gene</a>
+          </div>
+        </div>
+        <a class="item {% if urlname=='statistics' %} active {% endif %}" href="{{ url('macsnvdb:statistics') }}" title="Statistical table">Statistics</a>
+        <a class="item {% if urlname=='retrieve' %} active {% endif %}" href="{{ url('macsnvdb:retrieve') }}" title="Search and Download SNVs">Retrieve</a>
+        <div class="ui dropdown item">
+          Help<i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="{{ url('macsnvdb:organism') }}">Individual information</a>
+            <a class="item" href="{{ url('macsnvdb:help', kwargs={'page': 'document'}) }}">Documentation</a>
+            <a class="item" href="{{ url('macsnvdb:help', kwargs={'page': 'pipeline'}) }}">Process pipeline</a>
+            <a class="item" href="{{ url('macsnvdb:help', kwargs={'page': 'changelogs'}) }}">Changelogs</a>
+          </div>
+        </div>
+      </div>
+		</div>
+</div>
+
+{% block headbar %}{% endblock %}
+
+<div class="ui main container">
+{% block main %}{% endblock %}
+</div>
+
+<div class="ui inverted brown vertical footer segment">
+	<div class="ui left aligned container">
+      <div class="ui stackable inverted grid">
+        <div class="three wide column">
+          <h4 class="ui inverted header">Browse</h4>
+          <div class="ui inverted link list">
+            <a href="{{ url('macsnvdb:isnps') }}" class="item">Individual SNVs</a>
+            <a href="{{ url('macsnvdb:specific') }}" class="item">Specific SNVs</a>
+            <a href="{{ url('macsnvdb:nrsnps') }}" class="item">Non-redundant SNVs</a>
+            <a href="{{ url('macsnvdb:statistics') }}" class="item">SNVs statistics</a>
+          </div>
+        </div>
+        <div class="three wide column">
+          <h4 class="ui inverted header">&nbsp;</h4>
+          <div class="ui inverted link list">
+            <a href="{{ url('macsnvdb:diseases') }}" class="item">Disease-associated genes</a>
+            <a href="{{ url('macsnvdb:drugs') }}" class="item">Drug-targted genes</a>
+            <a href="{{ url('macsnvdb:retrieve') }}" class="item">Search and download SNVs</a>
+          </div>
+        </div>
+        <div class="three wide column">
+          <h4 class="ui inverted header">Resources</h4>
+          <div class="ui inverted link list">
+            <a href="https://www.ncbi.nlm.nih.gov/snp/" target="_blank" class="item">NCBI dbSNP</a>
+            <a href="http://www.ensembl.org/index.html" class="item">Ensembl</a>
+            <a href="https://www.drugbank.ca/" target="_blank" class="item">Drugbank</a>
+            <a href="https://omim.org/" target="_blank" class="item">OMIM</a>
+          </div>
+        </div>
+        <div class="seven wide column">
+          <p style="color: rgba(255,255,255,.5);">MACSNVdb database is hosted and maintained by the Bioinformatics and Integrative Genomics Research Group (BIG) at the Chengdu University, Chengdu, China.</p>
+          <p style="color: rgba(255,255,255,.5);">Copyright &copy; 2018 Chengdu University and Sichuan University. All Rights Reserved.</p>
+        </div>
+      </div>
+      <div class="ui inverted section divider"></div>
+      <div class="ui two column grid">
+        <div class="column">
+          <div class="ui tiny images" style="opacity: .7;">
+            <img class="ui image" src="{{ static('macaca/images/cdu.logo.png') }}">
+            <img class="ui image" src="{{ static('macaca/images/scu.logo.png') }}">
+          </div>
+        </div>
+        <div class="right aligned column">
+           <div class="ui horizontal inverted small link list">
+            <a class="item" href="http://big.cdu.edu.cn">About Us</a>
+            <a class="item" href="http://big.cdu.edu.cn">Contact Us</a>
+            <a class="item" href="https://www.cdu.edu.cn/" target="_blank">Chengdu University</a>
+            <a class="item" href="http://www.scu.edu.cn/" target="_blank">Sichuan University</a>
+            <span class="item">
+              <script type="text/javascript" src="//ra.revolvermaps.com/0/0/3.js?i=0daz1ftdraj&amp;b=0&amp;s=32&amp;m=2&amp;cl=ffffff&amp;co=010020&amp;cd=aa0000&amp;v0=60&amp;v1=60&amp;r=1" async="async"></script>
+            </span>
+          </div>
+          <div style="color: rgba(255,255,255,.5);">
+            Powered by <a style="color: rgba(255,255,255,.5);" href="https://www.djangoproject.com/" target="_blank">Django</a> and rendered by <a style="color: rgba(255,255,255,.5);" href="http://jinja.pocoo.org/" target="_blank">Jinja2</a>, designed with <a style="color: rgba(255,255,255,.5);" href="https://semantic-ui.com/" target="_blank">Semantic UI</a>.
+          </div>
+        </div>
+      </div>
+      
+    </div>
+</div>
+
+</body>
+{% block footer %}{% endblock %}
+
+</html>

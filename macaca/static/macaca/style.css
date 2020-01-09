@@ -1,0 +1,116 @@
+.ui.footer.segment {
+	margin: 3em 0em 0em;
+	padding: 5em 0em;
+}
+
+.ui.main{
+	margin-top: 3em;
+}
+
+.ui.result span{
+	margin-left: 20px;
+}
+.genotype-circos{
+	display: inline-block;
+	border-radius: 50%;
+	margin: 0 8px;
+	width: 14px; 
+	height:14px;
+	background:#e0e1e1;
+}
+.genotype-circos.small{
+	width: 12px;
+	height: 12px;
+}
+.genotype-circos.red{
+	background:#db2828;
+}
+.genotype-circos.blue{
+	background:#2185d0;
+}
+.genotype-circos.green{
+	background:#B2DBBF;
+}
+
+
+/*base color*/
+.A, .T, .C, .G, .N{
+	display: inline-block;
+	width: 10px;
+	text-align: center;
+	font-weight: bold;
+}
+
+
+.N{color:gray;}
+.A{color:#5050ff;}
+.T{color:orange;}
+.G{color:#00c000;}
+.C{color:#e00000;}
+
+.ui.chromosome span,
+.ui.individual span,
+.ui.samples span,
+.ui.filters span{
+	display: inline-block;
+	font-weight: bold;
+	text-align: right;
+	width: 90px;
+	padding-right: 5px;
+}
+.ui.individual{
+	margin: 3px 0;
+}
+
+#hero{
+	position: relative;
+	background-image: url(images/hero.png);
+	background-size: cover;
+	background-position: center;
+	text-align: center;
+	color:#fff;
+	text-shadow:0 0 1px rgba(0,0,0,.6);
+}
+#hero h1, #hero h1+h2{
+	margin:auto;
+	max-width:720px;
+	padding:40px 15px 0;
+	font-size:34px;
+}
+#hero h1+h2{
+	font-size:20px;
+	padding:12px 15px 20px;
+	line-height:1.4;
+}
+@media screen and (min-width:1024px){
+	#hero h1{
+		padding:56px 15px 0;
+		font-size:44px
+	}
+}
+#hero #hero-top{
+	padding:20px 20px 5px;
+	background:linear-gradient(to top,rgba(0,0,0,0) 0,rgba(0,0,0,.6) 100%);
+}
+#hero #hero-center{
+    max-width: 700px;
+    position: relative;
+    padding: 0 20px;
+    margin: 5px auto 100px;
+}
+#hero #hero-bottom{
+	position:relative;
+	z-index:10;
+	padding:12px 25px 12px;
+	color:#fff;
+	text-align:right;
+	background:linear-gradient(to top,rgba(0,0,0,.5) 0,rgba(0,0,0,0) 100%);
+}
+
+.center-aligned{
+	text-align: center;
+}
+
+.right-aligned{
+	text-align: right;
+}

@@ -1,0 +1,82 @@
+{% set urlname="snpcds" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+SNPs in CDS of {{ gid }}
+{% endblock %}
+
+{% block head %}
+<script src="{{ static('macaca/datatable/jquery.dataTables.min.js') }}"></script>
+<script src="{{ static('macaca/datatable/dataTables.semanticui.min.js') }}"></script>
+<link href="{{ static('macaca/datatable/dataTables.semanticui.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block main %}
+<h2 class="ui brown header">{{ gid }}</h2>
+
+<h3 class="ui header">Non-redundant SNPs in CDS region</h3>
+<table class="ui small table">
+	<thead>
+		<tr>
+			<th>SNP ID</th>
+			<th>Position</th>
+			<th>Ref</th>
+			<th>Alt</th>
+			<th>Mutation</th>
+			<th>
+				{% for s in species %}
+				<span style="display: inline-block; transform: rotate(-90deg); width: 28px; height: 18px;">
+					{{ s.code }}
+				</span>
+				{% endfor %}
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for snp in snps %}
+		<tr>
+			<td><a href="{{ url('nrsnp', kwargs={'chrom': '%02d'|format(snp.chromosome.pk), 'sid':'%09d'|format(snp.pk)}) }}">MACSNPR{{"%02d%09d"|format(snp.chromosome.pk,snp.pk)}}</a></td>
+			<td>chr{{ snp.chromosome.pk }}: {{snp.position}}</td>
+			<td><span class="{{ snp.reference }}">{{ snp.reference }}</span></td>
+			<td><span class="{{ snp.alteration}}">{{ snp.alteration}}</span></td>
+			<td>
+				{% for m in snp.mutation_set.all() %}
+				{% if m.synonymous == 1 %}
+				<div class="ui yellow label">missense</div>
+				{% else %}
+				<div class="ui green label">nonsense</div>
+				{% endif %}
+				{% endfor %}
+			</td>
+			<td>
+				{% for s in species %}
+				{% set k = (snp.pk, s.id) %}
+
+				{% if k in genotypes %}
+				{% if genotypes[k] == 1 %}
+				<a href="{{ url('isnp', kwargs={'indiv': '%03d'|format(s.id), 'sid':'%09d'|format(snp.pk)}) }}" title="MACSNP{{"%03d%09d"|format(s.id,snp.pk)}}"><span class="genotype-circos small red"></span></a>
+				{% elif genotypes[k] == 2 %}
+				<a href="{{ url('isnp', kwargs={'indiv': '%03d'|format(s.id), 'sid':'%09d'|format(snp.pk)}) }}" title="MACSNP{{"%03d%09d"|format(s.id,snp.pk)}}"><span class="genotype-circos small blue"></span></a>
+				{% elif genotypes[k] == 3 %}
+				<span class="genotype-circos small green"></span>
+				{% endif %}
+				{% else %}
+				<span class="genotype-circos small"></span>
+				{% endif %}
+				{% endfor %}
+			</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="5" class="center aligned">N/A</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<script type="text/javascript">
+$('.ui.table').DataTable({
+	columnDefs: [
+		{ "orderable": false, "targets": -1}
+	]
+});
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% set urlname="home" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}MACSNVdb - macaque SNV database {% endblock %}
+
+{% block headbar %}
+<div id="hero">
+	<div id="hero-top">
+		<h1>Macaque SNV Database</h1>
+		<h2>a database for genetic divergence investigation among macaques</h2>
+	</div>
+	<div id="hero-center">
+		<form method="get" id="search" action="{{url('macsnvdb:search')}}">
+			<div class="ui inverted fluid huge icon input">
+				<input type="text" id="search-input" name="q" placeholder="MACSNV001000001055">
+				<i class="search link icon"></i>
+			</div>
+			<p style="text-align: left;">Your input can not be empty and the input may be a SNV identifier (e.g. MACSNV001000001055), OMIM phenotype accession (e.g. 266920), Drug ID (e.g. DB02255) from Drugbank database, or macaque Ensembl gene ID (e.g. ENSMMUG00000000330), or gene name (e.g. NOC2L)</p>
+		</form>
+	</div>
+	<div id="hero-bottom">
+		<div class="ui horizontal list">
+			<div class="item">
+				<div class="ui green image label">Version <div class="detail">1.3</div></div>
+			</div>
+			<div class="item">
+				<div class="ui blue image label">Last updated <div class="detail">Dec 30, 2019</div></div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block main %}
+<div class="ui two column grid">
+	<div class="twelve wide column">
+		<div class="ui large basic segment">
+			<h3 class="ui header">Macaca SNV Database</h3>
+			<p>MACSNVdb is an open-access SNV database comprising ~74.51 million high-quality non-redundant SNVs called from 20 macaques that may assist researchers to investigate interspecies genetic divergence between macaques. MACSNVdb allows users to browse and retrieve individual, sepcific and non-redundant SNVs. In particular, users can retrieve non-synonymous SNVs that may have deleterious effects on protein structure or function within macaque orthologs of human disease and drug-target genes. MACSNVdb also integrates gene functional annotation information including GO term, KEGG pathway, Pfam and InterPro domains.
+			</p>
+
+			<embed src="{{ static('macaca/images/macsnpdb.svg') }}" width="100%"></embed>
+
+			<h3 class="ui header">Highlights</h3>
+			<ul class="ui relaxed list">
+				<li class="item">MACSNVdb allows you to browse macaque individual SNVs, specific SNVs and non-redundant SNVs.</li>
+				<li class="item">MACSNVdb also allows you to browse disease-associated and drug-targeted genes related SNVs, particularly non-synonymous SNVs which may have deleterious effects on protein structure or function.</li>
+				<li class="item">The data collected from 20 macaques covered all the four species groups within genus Macaca, and thus, it can facilitate you to conduct genotyping comparative analysis between different macaques.</li>
+				<li class="item">MACSNVdb not only provides detailed information for SNVs but also provides gene functional information.</li>
+				<li class="item">MACSNVdb provides a flexible download function to assit you to search and retrieve desired SNVs</li>
+			</ul>
+
+			<h3 class="ui header">Acknowledgements</h3>
+			<p>This work was supported by the National Natural Science Foundation of China (31501871 and 31530068), the Start-up Fund of Chengdu University (2081916062), the Key Research Fund on Sciences and Technologies for Joint Academic Institute and Local Enterprises of Sichuan (2018JZ0008), and partly funded by the Fundamental Research Funds for the Central Universities (2012017yjsy153).</p>
+
+			<h3 class="ui header">Contact</h3>
+			<p>Database developer Lianming Du (dulianming@cdu.edu.cn) and Zhenxin Fan (zxfan@cdu.edu.cn)</p>
+		</div>
+	</div>
+	<div class="four wide column">
+		<h3 class="ui top attached header">Latest News <a href="{{ url('macsnvdb:help', kwargs={'page': 'changelogs'}) }}" class="small ui label">more</a></h3>
+		<div class="ui attached segment">
+			<div class="ui relaxed large list">
+				<div class="item">
+					<i class="database icon"></i>
+					<div class="content">
+						<div class="header">Version 1.3</div>
+						<div class="description">
+							Updated reference genome to rheMac8 and annotation to Ensembl release 97.
+							<p class="right-aligned"><small>Dec 30, 2019</small></p>
+						</div>
+					</div>
+				</div>
+				<div class="item">
+					<i class="database icon"></i>
+					<div class="content">
+						<div class="header">Version 1.2</div>
+						<div class="description">
+							We used d3.js to reconstruct genotype comparative map to adapt to more individulas in the future. 
+							<p class="right-aligned"><small>Oct 14, 2018</small></p>
+						</div>
+					</div>
+				</div>
+				<div class="item">
+					<i class="database icon"></i>
+					<div class="content">
+						<div class="header">Version 1.1</div>
+						<div class="description">
+							We changed the snp models in database for more efficient data retreving
+							<p class="right-aligned"><small>Jul 16, 2018</small></p>
+						</div>
+					</div>
+				</div>
+				<div class="item">
+					<i class="database icon"></i>
+					<div class="content">
+						<div class="header">Version 1.0</div>
+						<div class="description">
+							MACSNVdb 1.0 was released and is on line now
+							<p class="right-aligned"><small>May 8, 2018</small></p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<h3 class="ui top attached header">Statistics</h3>
+		<table class="ui compact attached table">
+			<tbody>
+				<tr><td>Individuals</td><td class="right aligned"><span class="ui grey circular label">20</span></td></tr>
+				<tr><td>Groups</td><td class="right aligned"><span class="ui grey circular label">6</span></td></tr>
+				<tr><td>Species</td><td class="right aligned"><span class="ui grey circular label">10</span></td></tr>
+				<tr><td>Individual SNVs</td><td class="right aligned"><span class="ui grey circular label">193 129 390</span></td></tr>
+				<tr><td>Non-redundant SNVs</td><td class="right aligned"><span class="ui grey circular label">74 506 801</span></td></tr>
+				<tr><td>Group-specific SNVs</td><td class="right aligned"><span class="ui grey circular label">5 221 789</span></td></tr>
+				<tr><td>Species-specific SNVs</td><td class="right aligned"><span class="ui grey circular label">6 766 099</span></td></tr>
+				<tr><td>SNVs in CDS</td><td class="right aligned"><span class="ui grey circular label">486 697</span></td></tr>
+				<tr><td>Nonsynonymous SNVs</td><td class="right aligned"><span class="ui grey circular label">209 064</span></td></tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+{% endblock %}

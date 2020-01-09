@@ -1,0 +1,40 @@
+{% set urlname="drugs" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Drug target genes - MACSNVdb
+{% endblock %}
+
+{% block head %}
+<script src="{{ static('macaca/datatable/jquery.dataTables.min.js') }}"></script>
+<script src="{{ static('macaca/datatable/dataTables.semanticui.min.js') }}"></script>
+<link href="{{ static('macaca/datatable/dataTables.semanticui.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block main %}
+<h2 class="ui header">Drug Target Genes</h2>
+<table class="ui table">
+	<thead>
+		<tr>
+			<th class="single line">Ensembl ID</th>
+			<th class="single line">Symbol</th>
+			<th>Name</th>
+			<th class="single line">Drug ID</th>
+			<th class="single line">SNVs in CDS</th>
+		</tr>
+	</thead>
+</table>
+<script type="text/javascript">
+$('.ui.table').DataTable({
+	columnDefs: [
+		{ "orderable": false, "targets": -1}
+	],
+	processing: true,
+	serverSide: true,
+	ajax: {
+		url: '{{ url("macsnvdb:drugs") }}',
+		type: 'POST'
+	}
+});
+</script>
+{% endblock %}

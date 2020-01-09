@@ -1,13 +1,16 @@
-#!/usr/bin/env python
 import os
 import sys
+import gzip
 import math
 import pyfaidx
 import intersection
 
 from Bio.Seq import Seq
 
-ref_dir, data_dir = sys.argv[1:]
+work_dir = '/home/ming/macaca/snvs'
+table_dir = os.path.join(work_dir, 'tables')
+data_dir = os.path.join(work_dir, 'data')
+ref_dir = os.path.join(work_dir, 'ref')
 
 class Data(dict):
 	def __getattr__(self, name):
@@ -20,7 +23,7 @@ def gtf_parser(annot_file):
 	"""
 	parse GFF, GTF, comparessed gz annotation file
 	"""
-	with open(annot_file) as fh:
+	with gzip.open(annot_file, 'rt') as fh:
 		for line in fh:
 			if line[0] == '#':
 				continue
@@ -42,32 +45,32 @@ def gtf_parser(annot_file):
 			
 			yield record
 
-gtf_file = os.path.join(ref_dir, 'Macaca_mulatta.MMUL_1.85.gtf')
-cds_file = os.path.join(ref_dir, 'Macaca_mulatta.MMUL_1.85.cds.fa')
-protein_file = os.path.join(ref_dir, 'Macaca_mulatta.MMUL_1.85.pep.fa')
+gtf_file = os.path.join(ref_dir, 'Macaca_mulatta.Mmul_8.0.1.97.gtf.gz')
+cds_file = os.path.join(ref_dir, 'Macaca_mulatta.Mmul_8.0.1.cds.fa')
+protein_file = os.path.join(ref_dir, 'Macaca_mulatta.Mmul_8.0.1.pep.fa')
 
-snp_file = os.path.join(data_dir, 'snp.table')
+snp_file = os.path.join(table_dir, 'snp.table')
 
-gannot_out = open(os.path.join(data_dir, 'gene_annot.table'), 'w')
-tannot_out = open(os.path.join(data_dir, 'transcript_annot.table'), 'w')
-mutate_out = open(os.path.join(data_dir, 'mutation.table'), 'w')
+gannot_out = open(os.path.join(table_dir, 'gene_annot.table'), 'w')
+tannot_out = open(os.path.join(table_dir, 'transcript_annot.table'), 'w')
+mutate_out = open(os.path.join(table_dir, 'mutation.table'), 'w')
 
 gene_mapping = {}
-with open(os.path.join(data_dir, 'gene.table')) as fh:
+with open(os.path.join(table_dir, 'gene.table')) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
 		gene_mapping[cols[1]] = cols[0]
 
 transcript_mapping = {}
 transcript_to_protein = {}
-with open(os.path.join(data_dir, 'transcript.table')) as fh:
+with open(os.path.join(table_dir, 'transcript.table')) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
 		transcript_mapping[cols[1]] = cols[0]
 		transcript_to_protein[cols[1]] = cols[2]
 
 stopcodon_mapping = {}
-with open(os.path.join(data_dir, 'incomplete_stop_codon.txt')) as fh:
+with open(os.path.join(ref_dir, 'incomplete_stop_codon.txt')) as fh:
 	for line in fh:
 		cols = line.strip().split('\t')
 		stopcodon_mapping[(int(cols[1]), int(cols[2]))] = (cols[3], int(cols[4]))
@@ -344,7 +347,7 @@ with open(snp_file) as fh:
 					#print pos, codon_pos, codon, alt_codon, ref_aa, alt_aa
 
 					if ref_aa != 'stop_codon':
-						print pos, locus.start, locus.end, locus.strand, ref_aa, codon
+						print(pos, locus.start, locus.end, locus.strand, ref_aa, codon)
 						raise Exception("Error stop codon")
 
 					if ref_aa == alt_aa:
@@ -368,7 +371,7 @@ with open(snp_file) as fh:
 
 			for feat in set(locations):
 				gannot_count += 1
-				gannot_out.write("%s\t%s\t%s\t%s\t%s\n" % (gannot_count, gene_pos, feat_types[feat], cols[0], gene_mapping[r.geneid]))
+				gannot_out.write("%s\t%s\t%s\t%s\t%s\n" % (gannot_count, gene_pos, feat_types[feat], gene_mapping[r.geneid], cols[0]))
 
 			for muta in set(mutations):
 				mutation_count += 1

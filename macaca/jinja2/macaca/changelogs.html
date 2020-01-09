@@ -1,0 +1,71 @@
+{% set urlname="help" %}
+{% extends "macaca/base.html" %}
+
+{% block title %} Changelogs {% endblock %}
+
+{% block main %}
+
+<table class="ui celled table">
+	<tbody>
+		<tr>
+			<td class="top aligned">
+				<div class="ui relaxed list">
+					<div class="item"><span class="ui brown large label">version 1.3</span></div>
+					<div class="item">Dec 30, 2019</div>
+				</div>
+			</td>
+			<td>
+				<div class="ui relaxed bulleted list">
+					<div class="item">Chagned "SNP" into "SNV"</div>
+					<div class="item">Updated macaque reference genome from rheMac2 to rheMac8</div>
+					<div class="item">Updated gene annotation from Ensembl release 85 to Ensembl release 97</div>
+					<div class="item">Updated drug information to drangbank v5.1.4</div>
+					<div class="item">Added a changelog page with timeline to show detailed update information</div>
+					<div class="item">Added support for searching gene by name, symbol</div>
+					<div class="item">Fixed 505 error caused by searching item</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="ui relaxed list">
+					<div class="item"><span class="ui brown large label">version 1.2</span></div>
+					<div class="item">Oct 14, 2018</div>
+				</div>
+			</td>
+			<td>
+				<div class="ui relaxed bulleted list">
+					<div class="item">We used d3.js to reconstruct genotype comparative map to adapt to more individulas in the future</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="ui relaxed list">
+					<div class="item"><span class="ui brown large label">version 1.1</span></div>
+					<div class="item">Jul 16, 2018</div>
+				</div>
+			</td>
+			<td>
+				<div class="ui relaxed bulleted list">
+					<div class="item">We changed the snp models in database for more efficient data retreving</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class="ui relaxed list">
+					<div class="item"><span class="ui brown large label">version 1.0</span></div>
+					<div class="item">May 8, 2018</div>
+				</div>
+			</td>
+			<td>
+				<div class="ui relaxed bulleted list">
+					<div class="item">MACSNVdb 1.0 was released and is on line now</div>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+{% endblock %}

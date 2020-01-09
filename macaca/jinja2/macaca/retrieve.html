@@ -1,0 +1,146 @@
+{% set urlname="retrieve" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Search and download SNVs - MACSNVdb
+{% endblock %}
+
+{% block main %}
+<form method="get" action="{{ url('macsnvdb:retrieve') }}" class="ui form">
+
+<div class="ui dividing header">Individual, Specific or Non-redundant SNVs</div>
+<div class="four fields">
+	<div class="field">
+		<label>
+			<div class="ui radio checkbox">
+				<input value="individual" type="radio" name="category" checked="checked">
+				<label>Individual</label>
+			</div>
+		</label>
+		<select name="individual" class="ui selection dropdown">
+			{% for individual in individuals %}
+			<option value="{{ individual.id }}">{{ individual.code }} - {{ individual.species.scientific}}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="field">
+		<label>
+			<div class="ui radio checkbox">
+				<input value="group" type="radio" name="category">
+				<label>Group Specific</label>
+			</div>
+		</label>
+		<select name="group" class="ui selection dropdown">
+			{% for group in groups %}
+			<option value="{{ group.id }}">{{ group.name }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="field">
+		<label>
+			<div class="ui radio checkbox">
+				<input value="species" type="radio" name="category">
+				<label>Species Specific</label>
+			</div>
+		</label>
+		<select name="species" class="ui selection dropdown">
+			{% for s in species %}
+			<option value="{{ s.id }}">{{ s.common }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="field">
+		<label>
+			<div class="ui radio checkbox">
+				<input value="nrsnps" type="radio" name="category">
+				<label>Non-redundant</label>
+			</div>
+		</label>
+		<select name="samples" multiple="" class="ui selection dropdown">
+			{% for s in individuals %}
+			<option value="{{ s.id }}">{{ s.code }}</option>
+			{% endfor %}
+		</select>
+	</div>
+</div>
+<div class="ui info message">Note: Search for Non-redundant SNVs allows to select multiple individuals for genotype comparison</div>
+
+<div class="ui dividing header">Chromosome and Region</div>
+<div class="three fields">
+	<div class="field">
+		<label>Chromosome:</label>
+		<select name="chr" class="ui selection dropdown">
+			{% for i in range(1, 21) %}
+			<option value="{{ i }}">chromosome {{ i }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="field">
+		<label>Start:</label>
+		<input type="number" name="start" min="1">
+	</div>
+	<div class="field">
+		<label>End:</label>
+		<input type="number" name="end" min="1">
+	</div>
+</div>
+
+<div class="ui dividing header">SNV Attributes</div>
+<div class="three fields">
+	<div class="field">
+		<label>Feature:</label>
+		<select name="feature" class="ui selection dropdown">
+			<option value="0">All</option>
+			<option value="1">CDS</option>
+			<option value="2">exon</option>
+			<option value="4">intron</option>
+			<option value="3">3'UTR</option>
+			<option value="5">5'UTR</option>
+		</select>
+	</div>
+	<div class="field">
+		<label>Genotype:</label>
+		<select name="genotype"  class="ui selection dropdown">
+			<option value="0">All</option>
+			<option value="1">Homogyzote</option>
+			<option value="2">Heterogyzote</option>
+		</select>
+	</div>
+	<div class="field">
+		<label>Mutation:</label>
+		<select name="mutation" class="ui selection dropdown">
+			<option value="0">All</option>
+			<option value="1">Synonymous</option>
+			<option value="2">Non-synonymous</option>
+		</select>
+	</div>
+</div>
+<div class="ui info message">Note: genotype attribute cannot be applied to filter non-redundant SNVs</div>
+
+<div class="ui dividing header">Associated Gene</div>
+<div class="two fields">
+	<div class="field">
+		<label>Gene ID type</label>
+		<select name="idtype" class="ui selection dropdown">
+			<option value="ensembl">Macaque Ensembl Gene</option>
+			<option value="disease">OMIM pheotype accession number</option>
+			<option value="drug">Drug ID from Drugbank</option>
+		</select>
+	</div>
+	<div class="field">
+		<label>Gene ID</label>
+		<input type="text" name="gene">
+	</div>
+</div>
+<div class="ui info message">Note: if you specified gene ID, the chromosome number will automatically be set to chromosome that the gene located</div>
+
+<div class="fields">
+	<div class="field">
+		<button type="submit" class="ui brown button">Search and Download SNVs</button>
+	</div>
+</div>
+
+</form>
+
+
+{% endblock %}

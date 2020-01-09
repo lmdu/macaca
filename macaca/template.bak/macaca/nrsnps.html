@@ -1,0 +1,487 @@
+{% set urlname="nrsnps" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Non-redundant SNPs - MACSNPdb
+{% endblock %}
+
+{% block head %}
+<script src="http://d3js.org/d3.v5.min.js"></script>
+<style type="text/css">
+#snpmap{
+	position: relative;
+}
+.cell{
+	fill: #ededed;
+	shape-rendering: crispedges;
+}
+.row rect:hover{
+	stroke: #000;
+	stroke-width: 1px;
+}
+text.active{
+	fill: red;
+}
+.tooltip{
+	z-index: 100;
+	position: absolute;
+	height: auto;
+	border: 1px solid #ccc;
+	background: #fff;
+	border-radius: 5px;
+	padding: 10px;
+	pointer-events: none;
+	box-shadow: 0px 0px 5px 0px rgba(123, 123, 123, 0.5);
+}
+
+.square{
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	margin-right: 5px;
+	background: #ebebeb;
+}
+.square.homo{
+	background: #db2828; 
+}
+.square.heter{
+	background: #2185d0;
+}
+.square.na{
+	background: #bde4b7;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+
+{% set features=["All", "CDS", "EXON", "3'UTR", "INTRON", "5'UTR"] %}
+{% set mutations = ["All", "non-synonymous", "synonymous"] %}
+
+<div class="ui brown segment">
+	<h4 class="ui header">
+		<i class="filter icon"></i>
+		<div class="content">Filter SNPs Using Feature Selection</div>
+	</h4>
+	<div class="ui chromosome circular labels">
+		<span>Chromosome</span>
+		{% for c in range(1,21) %}
+		<a class="ui label {% if paras.chromosome==c %} orange {% endif %}" data-num="{{c}}">chr{{c}}</a>
+		{% endfor %}
+	</div>
+	<div class="ui filters circular labels">
+		<span>Gene feature</span>
+		{% for f in features %}
+		<a class="ui features label {% if paras.feature==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ f }}</a>
+		{% endfor %}
+
+		<span>Mutation</span>
+		{% for m in mutations %}
+		<a class="ui mutations label {% if paras.mutation==loop.index0 %} orange {% endif %}" data-num="{{loop.index0}}">{{ m }}</a>
+		{% endfor %}
+	</div>
+</div>
+
+<div class="ui brown segment">
+	<div id="progress" class="ui inverted dimmer">
+		<div class="ui loader"></div>
+	</div>
+	<div>
+		<div class="ui large icon buttons">
+			<a class="ui button" id="zoomin">
+				<i class="zoom in icon"></i>
+			</a>
+			<a class="ui button" id="zoomout">
+				<i class="zoom out icon"></i>
+			</a>
+		</div>
+
+		<div class="ui relaxed horizontal list">
+			<div class="item"></div>
+			<div class="item"><span class="square homo"></span>Homozygote</div>
+			<div class="item"><span class="square heter"></span>Heterozyote</div>
+			<div class="item"><span class="square na"></span>Not variant</div>
+			<div class="item"><span class="square"></span>No data</div>
+			<div class="item"><span id="snp-counts"></span> SNPs</div>
+			<div class="item"><span id="current-page"></span> of <span id="page-counts"></span> Pages</div>
+		</div>
+
+		<div class="ui right floated pagination menu">
+			<a class="icon item previous" data-num="">
+				<i class="left chevron icon"></i>
+				Prev
+			</a>
+			<a class="icon item next" data-num="">
+				Next
+				<i class="right chevron icon"></i>
+			</a>
+		</div>
+	</div>
+	<div id="snpmap"></div>
+</div>
+
+<script type="text/javascript">
+var container = d3.select('#snpmap');
+
+var tooltip = d3.select('body')
+	.attr('position', 'relative')
+	.append("div")
+	.attr('class', 'tooltip')
+	.style('opacity', 0);
+
+var margin = {top: 180, left: 40, right: 0, bottom: 0},
+	width = parseInt(container.style('width')) - 2*parseInt(container.style('padding-left'));
+
+var colormap = d3.scaleOrdinal()
+	.domain([0, 1, 2, 3])
+	.range(["#ebebeb", "#db2828", "#2185d0", "#bde4b7"]);
+
+var species = {{ labels|tojson }};
+var cellSpace = 2;
+var cellHeight = 25;
+var cellWidth = 25;
+var numRows = 20;
+var numCols = Math.floor((width-margin.left)/cellWidth);
+var fontSize = 14;
+var scale = 1;
+var height = numRows*cellHeight;
+
+//fetch parameters
+var currentPage = 1;
+var chromosome = 1;
+var feature = 0;
+var mutation = 0;
+
+var svg = container.append('svg')
+	.attr('width', width)
+	.attr('height', height + margin.top + margin.bottom)
+	//.style('margin-left', -margin.left + 'px')
+	.append('g')
+	.attr('transform', "translate(" + margin.left + "," + margin.top + ")");
+
+var y = d3.scaleBand()
+	.domain(d3.range(numRows))
+	.range([0, numRows*cellHeight]);
+
+var x = d3.scaleBand()
+	.domain(d3.range(numCols))
+	.range([0, numCols*cellWidth]);
+
+var row = svg.selectAll('.row')
+	.data(new Array(20))
+	.enter()
+	.append('g')
+	.attr('class', 'row')
+	.attr('transform', function(d, i){
+		return "translate(0," + y(i) + ")";
+	})
+
+row.append('text')
+	.attr('x', -10)
+	.attr('y', x.bandwidth()/2)
+	.attr('dy', '.32em')
+	.attr('text-anchor', 'end')
+	.text(function(d, i){
+		return species[i];
+	});
+
+function padNumber(num, size){
+	var s = num + '';
+	while(s.length < size) s = '0' + s;
+	return s;
+}
+
+function fetchStarted(){
+	$('#progress').addClass('active');
+}
+
+function fetchFinished(){
+	$('#progress').removeClass('active');
+}
+
+function updateLayout(){
+	fetchStarted();
+	columnWidth = Math.floor(cellWidth*scale);
+	fontSize = Math.floor(14*scale);
+	if(fontSize > 14){
+		fontSize = 14;
+	}
+
+	numCols = Math.floor((width-margin.left)/columnWidth);
+	x = d3.scaleBand()
+		.domain(d3.range(numCols))
+		.range([0, numCols*columnWidth]);
+
+	d3.json("{{ url('nrsnps') }}", {
+		method: 'POST',
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
+			page: currentPage,
+			records: numCols,
+			chromosome: chromosome,
+			feature: feature,
+			mutation: mutation
+		})
+	})
+	.then(function(res){
+		$('.ui.pagination a.next').data('num', res.paras.next);
+		$('.ui.pagination a.previous').data('num', res.paras.prev);
+		$('#snp-counts').text(res.paras.total);
+		$('#current-page').text(res.paras.page);
+		$('#page-counts').text(res.paras.pages);
+
+		row.data(res.matrix);
+
+		update = row.selectAll('.cell').data(function(d){return d; })
+
+		update.attr('x', function(d, i){ return x(i);})
+			.attr('width', columnWidth - cellSpace)
+
+		update.enter()
+			.append('rect')
+			.attr('class', 'cell')
+			.attr('x', function(d,i){return x(i);})
+			.attr("width", columnWidth - cellSpace)
+			.attr("height", cellHeight - cellSpace)
+		
+		update.exit()
+			.remove();
+
+		row.selectAll('.cell')
+			.data(function(d, i){ return d; })
+			.style('fill', function(d, i){
+				return colormap(d.g);
+			})
+			.style('cursor', function(d){
+				if(d.g==1 || d.g==2){
+					return 'pointer';
+				} else {
+					return 'auto';
+				}
+			})
+			.on('click', function(d, i){
+				if(d.g==0 || d.g==3){
+					return;
+				}
+				var snp = res.variants[d.x];
+				var url = 'http://big.cdu.edu.cn/macsnpdb/snp/MACSNP' + padNumber(d.y+1, 3) + padNumber(snp.id, 9);
+				window.open(url, '_blank');
+			})
+			.on('mouseover', function(d, i){
+				d3.selectAll('.row text')
+					.classed('active', function(x, j){ return j == d.y});
+				d3.selectAll('.column text')
+					.classed('active', function(x, j){ return j == d.x});
+
+				if(d.g==0 || d.g==3){
+					return;
+				}
+
+				var snp = res.variants[d.x];
+
+				tooltip.html('<div><b>MACSNP'+ padNumber(d.y+1, 3) + padNumber(snp.id, 9) + '</b></div>'
+					+ '<div><b>Position: </b>chr' + snp.chr + ': ' + snp.pos  + '</div>'
+					+ '<div><b>Reference: </b><span class="' + snp.ref + '">' + snp.ref + '</span></div>'
+					+ '<div><b>Alteration: </b><span class="' + snp.alt + '">' + snp.alt + '</span></div>'
+				)
+				.style('left', d3.event.pageX + "px")
+				.style('top', d3.event.pageY + 20 + "px")
+				.transition()
+				.duration(200)
+				.style('opacity', 0.9);
+			})
+			.on('mouseout', function(){
+				d3.selectAll('text').classed('active', false);
+				tooltip.transition()
+				.duration(500)
+				.style('opacity', 0);
+			});
+
+		svg.selectAll('.column').remove();
+		
+		if(fontSize > 3){
+			svg.selectAll('.column').data(res.variants).enter().append('g')
+				.attr('class', 'column')
+				.attr('transform', function(d, i){
+					return "translate(" + x(i) + ")rotate(-90)";
+				})
+				.append('text')
+				.attr('x', 10)
+				.attr('y', x.bandwidth()/2)
+				.attr('dy', ".32em")
+				.text(function(d, i){
+					return 'MACSNPR' + padNumber(d.chr, 2) + padNumber(d.id, 9);
+				})
+				.attr('text-anchor', 'start')
+				.attr('font-size', fontSize)
+				.attr('cursor', 'pointer')
+				.attr('fill', '#4183c4')
+				.on('click', function(d, i){
+					var url = 'http://big.cdu.edu.cn/macsnpdb/snp/MACSNPR' + padNumber(d.chr, 2) + padNumber(d.id, 9);
+					window.open(url, '_blank');
+				});
+		}
+		fetchFinished();
+	})
+	.catch(function(err){
+		fetchFinished();
+		alert(err);
+	});
+}
+
+function updateGenotype(){
+	fetchStarted();
+	
+	d3.json("{{ url('nrsnps') }}", {
+		method: 'POST',
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
+			page: currentPage,
+			records: numCols,
+			chromosome: chromosome,
+			feature: feature,
+			mutation: mutation
+		})
+	})
+	.then(function(res){
+		$('.ui.pagination a.next').data('num', res.paras.next);
+		$('.ui.pagination a.previous').data('num', res.paras.prev);
+		$('#snp-counts').text(res.paras.total);
+		$('#current-page').text(res.paras.page);
+		$('#page-counts').text(res.paras.pages);
+
+		row.data(res.matrix)
+			.selectAll('.cell')
+			.data(function(d, i){ return d; })
+			.style('fill', function(d, i){
+				return colormap(d.g);
+			})
+			.style('cursor', function(d){
+				if(d.g==1 || d.g==2){
+					return 'pointer';
+				} else {
+					return 'auto';
+				}
+			})
+			.on('click', function(d, i){
+				if(d.g==0 || d.g==3){
+					return;
+				}
+				var snp = res.variants[d.x];
+				var url = 'http://big.cdu.edu.cn/macsnpdb/snp/MACSNP' + padNumber(d.y+1, 3) + padNumber(snp.id, 9);
+				window.open(url, '_blank');
+			})
+			.on('mouseover', function(d, i){
+				d3.selectAll('.row text')
+					.classed('active', function(x, j){ return j == d.y});
+				d3.selectAll('.column text')
+					.classed('active', function(x, j){ return j == d.x});
+
+				if(d.g==0 || d.g==3){
+					return;
+				}
+
+				var snp = res.variants[d.x];
+
+				tooltip.html('<div><b>MACSNP'+ padNumber(d.y+1, 3) + padNumber(snp.id, 9) + '</b></div>'
+					+ '<div><b>Position: </b>chr' + snp.chr + ': ' + snp.pos  + '</div>'
+					+ '<div><b>Reference: </b><span class="' + snp.ref + '">' + snp.ref + '</span></div>'
+					+ '<div><b>Alteration: </b><span class="' + snp.alt + '">' + snp.alt + '</span></div>'
+				)
+				.style('left', d3.event.pageX + "px")
+				.style('top', d3.event.pageY + 20 + "px")
+				.transition()
+				.duration(200)
+				.style('opacity', 0.9);
+			})
+			.on('mouseout', function(){
+				d3.selectAll('text').classed('active', false);
+				tooltip.transition()
+				.duration(500)
+				.style('opacity', 0);
+			});
+		
+		if(fontSize > 3){
+			svg.selectAll('.column text').data(res.variants)
+				.text(function(d, i){
+					return 'MACSNPR' + padNumber(d.chr, 2) + padNumber(d.id, 9);
+				})
+				.attr('cursor', 'pointer')
+				.attr('fill', '#4183c4')
+				.on('click', function(d, i){
+					var url = 'http://big.cdu.edu.cn/macsnpdb/snp/MACSNPR' + padNumber(d.chr, 2) + padNumber(d.id, 9);
+					window.open(url, '_blank');
+				});
+		}
+		fetchFinished();
+	})
+	.catch(function(err){
+		fetchFinished();
+		alert(err);
+	});
+}
+
+$('.ui.chromosome a').click(function(){
+	$('.ui.chromosome a').removeClass('orange');
+	$(this).addClass('orange');
+	chromosome = parseInt($(this).data('num'));
+	updateGenotype();
+});
+
+$('a.features').click(function(){
+	$('a.features').removeClass('orange');
+	$(this).addClass('orange');
+	feature = parseInt($(this).data('num'));
+	updateGenotype();
+});
+
+$('a.mutations').click(function(){
+	$('a.mutations').removeClass('orange');
+	$(this).addClass('orange');
+	mutation = parseInt($(this).data('num'));
+	updateGenotype();
+});
+
+$('.ui.pagination a').click(function(){
+	var p = parseInt($(this).data('num'));
+	if(p > 0){
+		currentPage = p;
+		updateGenotype();
+	}
+});
+
+$('#zoomin').click(function(){
+	if(scale >= 1){
+		scale += 0.5
+	} else {
+		scale += 0.2
+	}
+
+	if(scale > 4){
+		scale = 4
+	} else {
+		updateLayout();
+	}
+});
+$('#zoomout').click(function(){
+	if(scale <= 1){
+		scale -= 0.2;
+	} else {
+		scale -= 0.5
+	}
+
+	if(scale < 0.2){
+		scale = 0.2
+	} else {
+		updateLayout();
+	}
+});
+
+updateLayout();
+</script>
+
+{% endblock %}

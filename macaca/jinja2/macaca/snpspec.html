@@ -1,0 +1,159 @@
+{% set urlname="specific" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+MACSNV{{"%s%02d%08d"|format(cat, category.id, snp.id)}} - MACSNVdb
+{% endblock %}
+
+{% block main %}
+<h2 class="ui brown header">
+	MACSNV{{"%s%02d%08d"|format(cat, category.id, snp.id)}}
+	<div class="ui orange large label">
+		{% if cat == 'G' %}Group{% else %}Species{% endif %}-Specific to {% if cat == 'G' %} {{category.name}} {% else %} <i>{{category.common}}</i> {% endif %}
+	</div>
+</h2>
+
+<h3 class="ui header">Variant Allele information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Chromosome</th><th>Position</th><th>Reference</th><th>Alteration</th><th>Genotype</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>{{ snp.chromosome.name }}</td>
+			<td>{{ snp.position }}</td>
+			<td><span class="{{ snp.reference }}">{{ snp.reference }}</span></td>
+			<td><span class="{{ snp.alteration }}">{{ snp.alteration }}</span></td>
+			<td>
+				<div class="ui circular red label">homozygote</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 class="ui header">Variant Allele Flanking Sequence</h3>
+<table class="ui definition table">
+	<tr>
+		<td>5' Flanking Sequence</td>
+		<td>
+			{% for b in snp.five %}
+			<span class="{{ b }}">{{ b }}</span>
+			{% endfor %}
+		</td>
+	</tr>
+	<tr>
+		<td>3' Flanking Sequence</td>
+		<td>
+			{% for b in snp.three %}
+			<span class="{{ b }}">{{ b }}</span>
+			{% endfor %}
+		</td>
+	</tr>
+</table>
+
+<h3 class="ui header">Gene Information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Gene ID</th><th>Gene Name</th><th>Biotype</th><th>Position in Gene</th><th>Strand</th><th>Location</th></tr>
+	</thead>
+	<tbody>
+		{% for gene in genes %}
+		<tr>
+			<td><a class="ui item" href="{{ url('macsnvdb:gene', kwargs={'gid': gene.gene.ensembl}) }}">{{ gene.gene.ensembl }}</a></td>
+			<td><a data-tooltip="{{ gene.gene.description }}">{{ gene.gene.name }}</a></td>
+			<td>{{ gene.gene.get_biotype_display() }}</td>
+			<td>{{ gene.gene_pos }}</td>
+			<td>{{ gene.gene.strand }}</td>
+			<td>{{ gene.get_feature_display() }}</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="6" class="center aligned">N/A</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h3 class="ui header">Transcript and Protein Annotation Information</h3>
+<table class="ui table">
+	<thead>
+		<tr>
+			<th>Transcript ID</th>
+			<th>Position in Transcript</th>
+			<th>Codon Change</th>
+			<th>Protein ID</th>
+			<th>Position in Protein</th>
+			<th>Residue Change</th>
+			<th>Mutation</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for transcript in transcripts %}
+		<tr>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/geneview?gene={{ transcript.transcript.ensembl }}">{{ transcript.transcript.ensembl }} <i class="external alternate icon"></i></a></td>
+			<td>{{ transcript.transcript_pos }}</td>
+			<td>
+				{% for b in transcript.ref_codon -%}
+				{% if loop.index == transcript.codon_pos -%}
+				<b style="color:red;">{{ b }}</b>
+				{%- else -%}
+				{{ b }}
+				{%- endif %}
+				{%- endfor %}
+				 -> 
+				{% for b in transcript.alt_codon -%}
+				{% if loop.index == transcript.codon_pos -%}
+				<b style="color:red;">{{ b }}</b>
+				{%- else -%}
+				{{ b }}
+				{%- endif %}
+				{%- endfor %}
+			</td>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/geneview?gene={{ transcript.transcript.protein }}">{{ transcript.transcript.protein }} <i class="external alternate icon"></i></a></td>
+			<td>{{ transcript.protein_pos }}</td>
+			<td>{{ transcript.ref_aa }} -> {{ transcript.alt_aa }}</td>
+			<td>{{ transcript.get_synonymous_display() }}</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="7" class="center aligned">N/A</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h3 class="ui header">Genotypes of individuals in this position</h3>
+<table class="ui celled table">
+	<thead>
+		<tr>
+			{% for sample in samples %}
+			<th>{{ sample.code }}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			{% for s in samples %}
+			<td>
+			{% if genotypes[s.id] == 1 %}
+			<a href="{{ url('macsnvdb:isnp', kwargs={'indiv': '%03d'|format(s.id), 'sid':'%09d'|format(snp.pk)}) }}" title="MACSNP{{"%03d%09d"|format(s.id,snp.pk)}}"><span class="genotype-circos red"></span></a>
+			{% elif genotypes[s.id] == 2 %}
+			<a href="{{ url('macsnvdb:isnp', kwargs={'indiv': '%03d'|format(s.id), 'sid':'%09d'|format(snp.pk)}) }}" title="MACSNP{{"%03d%09d"|format(s.id,snp.pk)}}"><span class="genotype-circos blue"></span></a>
+			{% elif genotypes[s.id] == 3 %}
+			<span class="genotype-circos green"></span>
+			{% else %}
+			<span class="genotype-circos"></span>
+			{% endif %}
+			</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+	<tfoot>
+		<tr>
+			<th colspan="21">
+				<div class="ui right floated basic segment">
+					<span class="genotype-circos red"></span> Homozygote
+					<span class="genotype-circos green"></span> Not variant
+				</div>
+			</th>
+		</tr>
+	</tfoot>
+</table>
+
+{% endblock %}

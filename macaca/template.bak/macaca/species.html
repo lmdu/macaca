@@ -1,0 +1,20 @@
+{% set urlname = "organism" %}
+{% extends "macaca/base.html" %}
+
+{% block main %}
+<div class="ui header">Species Information</div>
+<table class="ui compact table">
+	<thead>
+		<tr><th>Scientific Name</th><th>Common Name</th><th>Taxonomy</th><th>Group</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><i>{{ species.scientific }}</i></td>
+			<td>{{ species.common }}</td>
+			<td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{species.taxonomy}}" target="_blank">{{species.taxonomy}}</a></td>
+			<td>{{ species.group.name }}</td>
+		</tr>
+	</tbody>
+</table>
+<div class="ui header">Species Specific SNPs</div>
+{% endblock %}

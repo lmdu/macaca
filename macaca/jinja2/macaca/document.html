@@ -1,0 +1,103 @@
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Documentation - MACSNVdb
+{% endblock %}
+
+{% block head %}
+<style type="text/css">
+.ui.vertical.menu .menu .item{
+	font-size: 0.98em;
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="ui basic large segment">
+<div class="ui two column grid">
+	<div class="four wide column" id="document">
+		<div class="ui sticky">
+			<div class="ui vertical large menu">
+				<div class="item">
+					<a href="#1" class="header">1 Homepage of MACSNVdb</a>
+				</div>
+				<div class="item">
+					<a href="#2" class="header">2 Browse SNVs</a>
+					<div class="menu">
+						<a href="#2.1" class="item">2.1 SNV unique identifiers</a>
+						<a href="#2.2" class="item">2.2 Individual SNVs</a>
+						<a href="#2.3" class="item">2.3 Specific SNVs</a>
+						<a href="#2.4" class="item">2.4 Non-redundant SNVs</a>
+					</div>
+				</div>
+				<div class="item">
+					<a href="#3" class="header">3 Statistics</a>
+				</div>
+				<div class="item">
+					<a href="#4" class="header">4 Search and downlaod SNVs</a>
+					<div class="menu">
+						<a href="#4.1" class="item">4.1 Search SNVs</a>
+						<a href="#4.2" class="item">4.1 Download SNVs</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="twelve wide column">
+		<h2 id="1">1 Homepage of MACSNVdb</h2>
+		<p><img class="ui centered bordered image" src="{{ static('macaca/images/demo1.png') }}"></p>
+		<h4>(1) Navigation bar of MACSNVdb database</h4>
+		<ul class="ui list">
+			<li class="item"><b>Home</b>: Quick search; About MACSNVdb; Acknowledgements</li>
+			<li class="item"><b>Browse</b>: Individual SNVs, Specific SNVs; Non-redundant SNVs</li>
+			<li class="item"><b>Genes</b>: Disease-associated genes; Drug-targeted genes</li>
+			<li class="item"><b>Statistics</b>: Statistics of SNVs</li>
+			<li class="item"><b>Retrieve</b>: Search and download SNVs</li>
+			<li class="item"><b>Help</b>: Sample information; Documentation; Process pipeline</li>
+		</ul>
+		<h4>(2) Quick search</h4>
+		<p>Quick search function allows you to provide a SNV identifier (individual, group-specific, species-specific or non-redundant SNV), macaque Ensembl gene ID, OMIM phenotype accession number or drug ID from Drugbank database to query item.</p>
+
+		<h2 id="2">2 Browe SNVs</h2>
+		<h3 id="2.1">2.1 SNV unique identifier</h3>
+		<p>The database will automatically generate a unique identifier for individual, specific or non-redundant SNV. All the SNV identifier start with "MACSNV". The generation rule of identifers are shown in the following Figure.</p>
+		<p><img class="ui centered bordered image" src="{{ static('macaca/images/snpid.png') }}"></p>
+
+		<h3 id="2.2">2.2 Individual SNVs</h3>
+		<p><img class="ui centered bordered image" src="{{ static('macaca/images/demo2.png') }}"></p>
+		<p>The individual SNVs browse page includes the filtration pane (1) with the SNV result table (2) located under it. Through filtration pane, you may filter SNVs in table by specifying chrosome number, individual, gene feature (CDS, UTR or Intron etc.), genotype (homozygote or heterozygote) and mutation type (non-synonymous or synonymous). The result table listed SNV information including ID, position in chromosome, reference, alteration, individual, gene location and genotype. By clicking the SNV ID hyperlink, you can obtain detailed information for SNV.</p>
+
+		<h3 id="2.3">2.3 Specific SNVs</h3>
+		<p><img class="ui bordered image" src="{{ static('macaca/images/demo3.png') }}"></p>
+		<p>The specific SNVs browse page has the same interface with individual SNVs browe page. The filtration pane allows you to select a species or group to get a list of corresponding specific SNVs. The detailed information for specific SNV can be obtained by clicking the specific SNV ID hyperlink.</p>
+
+		<h3 id="2.4">2.4 Non-redundant SNVs</h3>
+		<p><img class="ui bordered image" src="{{ static('macaca/images/demo4.png') }}"></p>
+		<p>In the non-redundant SNVs browse page, in addition to non-redundant SNV information, you also get a genotyping comparative map of individuals. The genotyes are indicated by colored circle dots (red: homozygote, blue: heterozygote, green: not variant for that individual, gray: no reads mapped to this position for that individual). Users can select several individuals in filtration pane to generate a genotyping comparative map. Users may click the non-redundant SNV ID hyperlink to obtain detail information or click the red or blue dot to view individual SNV.</p>
+
+		<h2 id="3">3 Statistics</h2>
+		<p><img class="ui bordered image" src="{{ static('macaca/images/demo5.png') }}"></p>
+		<p>MACSNVdb summarizes SNV number by chromosome for each individuals and generates a statistical table shown in above figure. Each column indicates the SNV number in a chromosome of each individuals and Each row indicates the SNV number of a individual in each chromosome. Click the number, you can view the SNVs in a given chromosome and individual. You can use filters in filtration pane to get SNV summary table in gene region. You can also restrict the genotype and mutation type.</p>
+
+		<h2 id="4">4 Search and download SNVs</h2>
+		<h3 id="4.1">4.1 Search SNVs</h3>
+		<p><img class="ui bordered image" src="{{ static('macaca/images/demo6.png') }}"></p>
+		<p>MACSNVdb provide a flexible search function for you to retrieve desired SNVs. The above figure shows the interface of search page. You can select to search individual, group-specific, species-specific or non-redundant SNVs. You can set chromosome number, start position and end position. You can also set location of SNVs in gene, genotype and mutation type to restrict search result. Centainly, you can specify gene id to get gene-associated SNVs. When you search non-redundant SNVs, you can select multiple individuals to genotype comparison among individuals.</p>
+
+		<h3 id="4.2">4.2 Download SNVs</h3>
+		<p><img class="ui bordered image" src="{{ static('macaca/images/demo7.png') }}"></p>
+		<p>The above figure shows the search result of individual SNVs. You can select SNVs that you are interested and then click download button to obtain detailed information of selected SNVs.</p>
+
+	</div>
+</div>
+</div>
+
+<script type="text/javascript">
+$('.ui.sticky').sticky({
+	offset: 50,
+	context: '#document'
+});
+</script>
+
+{% endblock %}

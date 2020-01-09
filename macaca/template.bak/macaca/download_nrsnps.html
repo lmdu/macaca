@@ -1,0 +1,229 @@
+{% set urlname="retrieve" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Search results for Non-redundant SNPs
+{% endblock %}
+
+{% set features=["All", "CDS", "EXON", "3'UTR", "INTRON", "5'UTR"] %}
+{% set genotypes = ["All", "homozygote", "	heterozygote"] %}
+{% set mutations = ["All", "non-synonymous", "synonymous"] %}
+
+{% block main %}
+<form action="{{ url('retrieve') }}" method="get" id="snps-filter">
+	<input type="hidden" id="page" name="page" value="{{ paras.page }}">
+	<input type="hidden" id="records" name="records" value="{{ paras.records }}">
+	<input type="hidden" name="chr" value="{{ paras.chromosome }}">
+	<input type="hidden" name="start" value="{{ paras.start }}">
+	<input type="hidden" name="end" value="{{ paras.end }}">
+	<input type="hidden" name="category" value="{{ paras.category }}">
+	<input type="hidden" name="group" value="{{ paras.group }}">
+	<input type="hidden" name="species" value="{{ paras.species }}">
+	<input type="hidden" name="individual" value="{{ paras.individual }}">
+	<input type="hidden" name="feature" value="{{ paras.feature }}">
+	<input type="hidden" name="genotype" value="{{ paras.genotype }}">
+	<input type="hidden" name="mutation" value="{{ paras.mutation }}">
+	<input type="hidden" name="idtype" value="{{ paras.gene_type }}">
+	<input type="hidden" name="gene" value="{{ paras.gene_id }}">
+	{% for s in paras.samples %}
+	<input type="hidden" name="samples" value="{{ s }}">
+	{% endfor %}
+</form>
+
+<div class="ui brown segment">
+	<h4 class="ui header">
+		Searching for
+		{% if paras.category == 'individual' %}
+		individual
+		{% elif paras.category == 'group' %}
+		group-specific
+		{% elif paras.category == 'species' %}
+		species-specific
+		{% elif paras.category == 'nrsnps' %}
+		Non-redundant
+		{% endif %}
+		SNPs
+	</h4>
+	<div class="ui relaxed horizontal list">	
+		<div class="item">
+			{% if paras.category == 'individual' %}
+			<strong>Individual</strong>: {{organism.code}}
+			{% elif paras.category == 'group' %}
+			<strong>Group</strong>: {{organism.name}}
+			{% elif paras.category == 'species' %}
+			<strong>Species</strong>: <i>{{organism.scientific}}</i>
+			{% elif paras.category == 'nrsnps' %}
+			<strong>Individuals</strong>:
+				{% for o in organism %}
+				{{o.code}}, 
+				{% endfor %}
+			{% endif %}
+		</div>
+		<div class="item">
+			<strong>Chromosome</strong>: {{paras.chromosome}}
+		</div>
+		<div class="item">
+			<strong>Region</strong>:
+			{% if paras.start %}
+			{{ paras.start }} to 
+			{% endif %}
+			{% if paras.end %}
+			{{ paras.end }}
+			{% endif %}
+		</div>
+		<div class="item">
+			<strong>
+				{% if paras.gene_type == 'ensembl' %}
+				Ensembl gene ID
+				{% elif paras.gene_type == 'disease' %}
+				OMIM accession
+				{% elif paras.gene_type == 'drug' %}
+				Drugbank drug ID
+				{% endif %}
+			</strong>: {{ paras.gene_id }}
+		</div>
+		<div class="item">
+			<strong>Gene location</strong>: {{features[paras.feature]}}
+		</div>
+		<div class="item">
+			<strong>Genotype</strong>: {{genotypes[paras.genotype]}}
+		</div>
+		<div class="item">
+			<strong>Mutation type</strong>: {{mutations[paras.mutation]}}
+		</div>
+	</div>
+</div>
+
+<div class="ui grid">
+	<div class="eight wide column">
+		Show
+		<select class="ui numperpage compact selection dropdown">
+			{% set pages=[10, 25, 50, 100] %}
+			{% for v in pages %}
+			<option value="{{v}}" {% if paras.records==v %} selected="selected" {% endif %}>{{v}}</option>
+			{% endfor %}
+		</select>
+		entries
+	</div>
+
+	<div class="right aligned eight wide column">
+		<div class="ui basic result segment">
+			<span>{{ snps.paginator.count }} SNPs</span>
+			<span>{{ snps.number }} of {{ snps.paginator.num_pages }} Pages</span>
+		</div>
+	</div>
+</div>
+
+<form action="{{ url('download') }}" method="post">
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+<input type="hidden" name="category" value="{{ paras.category }}">
+<input type="hidden" name="individual" value="{{ paras.individual }}">
+<input type="hidden" name="chromosome" value="{{ paras.chromosome }}">
+{% for s in paras.samples %}
+<input type="hidden" name="samples" value="{{ s }}">
+{% endfor %}
+<table class="ui celled brown table">
+	<thead>
+		<tr>
+			<th>
+				<div class="ui master fitted checkbox">
+					<input type="checkbox" name="" class="hidden">
+				</div>
+			</th>
+			<th>SNP ID</th>
+			<th>Position</th>
+			<th>Reference</th>
+			<th>Alteration</th>
+			<th>
+				{% if paras.category == 'nrsnps' %}
+				{% for s in organism %}
+				<span style="display: inline-block; transform: rotate(-90deg); width: 30px; height: 22px;">{{ s.code }}</span>
+				{% endfor %}
+				{% else %}
+				Genotype
+				{% endif %}
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for snp in snps %}
+		<tr>
+			<td>
+				<div class="ui child fitted checkbox">
+					<input type="checkbox" name="snps" value="{{ snp.id }}" class="hidden">
+				</div>
+			</td>
+			<td>
+				<a href="{{ url('nrsnp', kwargs={'chrom': '%02d'|format(snp.chromosome.pk), 'sid': '%09d'|format(snp.id)}) }}">MACSNPC{{ "%02d%09d"|format(snp.chromosome.pk, snp.id) }}</a>
+			</td>
+			<td>{{snp.chromosome.name}}: {{snp.position}}</td>
+			<td><span class="{{snp.reference}}">{{snp.reference}}</span></td>
+			<td><span class="{{snp.alteration}}">{{snp.alteration}}</span></td>
+			<td>
+				{% for s in organism %}
+				{% set k = (snp.pk, s.id) %}
+
+				{% if k in variants %}
+				{% if variants[k] == 1 %}
+				<a href="{{ url('isnp', kwargs={'indiv': '%03d'|format(s.id), 'sid':'%09d'|format(snp.pk)}) }}" title="MACSNP{{"%03d%09d"|format(s.id,snp.pk)}}"><span class="genotype-circos red"></span></a>
+				{% elif variants[k] == 2 %}
+				<a href="{{ url('isnp', kwargs={'indiv': '%03d'|format(s.id), 'sid':'%09d'|format(snp.pk)}) }}" title="MACSNP{{"%03d%09d"|format(s.id,snp.pk)}}"><span class="genotype-circos blue"></span></a>
+				{% elif variants[k] == 3 %}
+				<span class="genotype-circos green"></span>
+				{% endif %}
+				{% else %}
+				<span class="genotype-circos"></span>
+				{% endif %}
+				{% endfor %}
+			</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="6" class="center aligned">No Results Found</td></tr>
+		{% endfor %}
+
+	</tbody>
+	<tfoot>
+		<tr>
+			<th colspan="6">
+				<div class="ui left floated basic segment">
+					<button class="ui brown button"><i class="icon download"></i> Download</button>
+					{% if paras.category == 'nrsnps' %}
+					<span class="genotype-circos red"></span> Homozygote
+					<span class="genotype-circos blue"></span> Heterozygote
+					<span class="genotype-circos green"></span> Not variant
+					<span class="genotype-circos"></span> No data
+					{% endif %}
+				</div>
+				<div class="ui pager right floated pagination menu">
+					{% if snps.has_previous() %}
+					<a class="icon item" data-num="{{ snps.previous_page_number() }}">
+						<i class="left chevron icon"></i>
+					</a>
+					{% endif %}
+
+					{% for i in range(3, 0, -1) %}
+					{% if snps.number - i > 0 %}
+					<a class="item" data-num="{{snps.number-i}}">{{snps.number-i}}</a>
+					{% endif %}
+					{% endfor %}
+					
+					<span class="item active" data-num="{{snps.number}}">{{snps.number}}</span>
+					
+					{% for i in range(1, 4) %}
+					{% if snps.number + i <= snps.paginator.num_pages %}
+					<a class="item" data-num="{{snps.number+i}}">{{snps.number+i}}</a>
+					{% endif %}
+					{% endfor %}
+
+					{% if snps.has_next() %}
+					<a class="icon item" data-num="{{ snps.next_page_number() }}">
+						<i class="right chevron icon"></i>
+					</a>
+					{% endif %}
+				</div>
+			</th>
+		</tr>
+	</tfoot>
+</table>
+</form>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "macaca/base.html" %}
+
+{% block head %}
+<script src="{{ static('macaca/pileup.min.js')}}"></script>
+<link rel="stylesheet" type="text/css" href="{{ static('macaca/pileup.css') }}">
+{% endblock %}
+
+{% block main %}
+<div id="gbrowser"></div>
+{% endblock %}
+
+{% block footer %}
+<script type="text/javascript">
+	var box = document.getElementById('gbrowser');
+	var p = pileup.create(box, {
+		range: {contig: '{{ chromosome }}', start: {{ position-50 }}, stop: {{ position+50 }} },
+		tracks: [
+			{
+				viz: pileup.viz.genome(),
+				isReference: true,
+				data: pileup.formats.twoBit({
+					url: '{{ static("data/rheMac2.2bit") }}'
+				}),
+				name: 'Reference'
+			},
+			{
+				viz: pileup.viz.scale(),
+				name: 'Scale'
+			},
+			{
+				viz: pileup.viz.location(),
+				name: 'Location'
+			},
+			{
+				viz: pileup.viz.genes(),
+				data: pileup.formats.bigBed({
+					url: '{{ static("data/ensGene.bb") }}'
+				}),
+				name: 'Genes'
+			},
+			{
+				viz: pileup.viz.variants(),
+				data: pileup.formats.vcf({
+					content: '{{ vcf }}'
+				}),
+				name: 'Variants'
+			},
+		]
+	});
+</script>
+{% endblock %}

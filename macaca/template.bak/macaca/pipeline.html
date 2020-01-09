@@ -1,0 +1,98 @@
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Data processing pipeline - MACSNPdb
+{% endblock %}
+
+{% block main %}
+<div class="ui basic large segment">
+	<h2 class="ui header">1 SNP calling pipeline</h2>
+
+	<h3 class="ui header">1.1 Genotyping pipeline</h3>
+	<p>The 150 bp pair-end short reads were aligned to the Indian rhesus macaque genome (rheMac2) using <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml" target="_blank">Bowtie2</a> (Langmead and Salzberg, 2012) under the local alignment algorithm with the very sensitive model and proper insert sizes. Default options were used for other parameters. Next, <a href="https://broadinstitute.github.io/picard/" target="_blank">Picard</a> and <a href="https://software.broadinstitute.org/gatk/" target="_blank">GATK</a> toolsets (Depristo et al., 2011) were applied to process the alignments to SNP calls. The whole pipeline converted the short reads to bam format alignment files, and then generated genotype calls in Variant Call Format (VCF). The pipeline is the same as used in our previous studies (Fan et al., 2014, 2016; Freedman et al., 2014; Zhang et al., 2014). Based on the raw SNP calls, a series of data quality filters were applied to improve the quality of genotype calls. Details of these filters were described in <a href="#2">section 2</a>.</p>
+
+	<p style="text-align: center;">
+		<embed src="{{ static('macaca/images/snpcalling.svg') }}"></embed>
+	</p>
+
+	<h3 class="ui header">1.2 Local realignment</h3>
+	<p>The false SNPs could be detected in regions where repeated alignment errors occur across overlapping reads because short read alignment algorithms work on each read independently. In order to reduce the false positive SNPs, we used GATK IndelRealigner to perform local multiple alignment. In total, there were three steps. First, identify suspicious intervals that may require realignment, then performing local realignment within these intervals, and then fix the mate pairing lost during the local realignment process. Example command lines were:</p>
+
+	<h4 class="ui header">a. Interval detection</h4>
+	<div class="ui positive message">java -Xmx9g -jar  GenomeAnalysisTK.jar -T RealignerTargetCreator --read_filter BadCigar -R reference_genome.fa -I input_file.bam -o output.intervals</div>
+
+	<h4 class="ui header">b. Local realignment</h4>
+	<div class="ui positive message">java -Xmx9g –jar GenomeAnalysisTK.jar -T IndelRealigner –R reference_genome.fa -I input_file.bam -targetIntervals output.intervals -o output_realign.bam</div>
+
+	<h4 class="ui header">c. Fix the mate pair information</h4>
+	<div class="ui positive message">java -jar -Xmx9g FixMateInformation.jar INPUT=output_realign.bam OUTPUT=output_realign_fixed.bam SORT_ORDER=coordinate VALIDATION_STRINGENCY=LENIENT</div> 
+
+	<h3 class="ui header">1.3 Base quality recalibration</h3>
+	<p>Quality scores assigned to individual base calls only reflected confidence in the specified nucleotide, but they were may be weakly correlated with the actual probabilities of erroneous base calls (Freedman et al. 2014; Zhang et al. 2014). Therefore, it is necessary to standardize quality scores across sequencing runs and libraries. Here, we performed empirical quality score recalibration using GATK. Three steps were involved: 1) since there was no dbSNP data set for wolf, we genotype in the same way as below (see <a href="#1.4">1.4</a>) to liberally define a SNP dataset that are excluded in the subsequent steps; 2) for the rest sites, creating the table for the frequency of base calls that are correct v.s. incorrect as a function of covariates reflecting features of the underlying sequence context stratified by library/sequencing run; 3) using the genome-wide empirical error rates conditional on each unique covariate set to replace the original quality scores. Example command lines were:</p>
+
+	<h4 class="ui header">a. Create recalibration table</h4>
+	<div class="ui positive message"> java -jar GenomeAnalysisTK.jar -R reference_genome.fa -T CountCovariates -l INFO -cov ReadGroupCovariate -cov CycleCovariate -cov DinucCovariate -cov QualityScoreCovariate --default_platform Illumina -I input_file.bam --knownSites:VCF Recalibration_Input.vcf -recalFile output_retable.csv --solid_recal_mode SET_Q_ZERO --solid_nocall_strategy LEAVE_READ_UNRECALIBRATED</div>
+
+	<h4 class="ui header">b. Generate recalibrated bam files</h4>
+	<div class="ui positive message"> java -jar -Xmx9g GenomeAnalysisTK.jar -R reference_genome.fa -l INFO -T TableRecalibration --default_platform Illumina -I input_file.bam -o Recal_output.bam -recalFile output_retable.csv --doNotWriteOriginalQuals --solid_recal_mode SET_Q_ZERO --solid_nocall_strategy PURGE_READ</div>
+
+	<h3 class="ui header" id="1.4">1.4 SNP and Indel calling</h3>
+	<p>We used the GATK Unified Genotyper [1] to call genotypes for all the samples. Because several different conservative post-genotyping filters were applied later, we set both standard minimum confidence thresholds to zero here. Example command line was:</p>
+
+	<div class="ui positive message"> java -jar -Xmx10g GenomeAnalysisTK.jar -R reference_genome.fa -T UnifiedGenotyper -l INFO --genotyping_mode DISCOVERY --output_mode EMIT_ALL_CONFIDENT_SITES -I input_file.bam --min_base_quality_score 20 --standard_min_confidence_threshold_for_emitting 0.0 --standard_min_confidence_threshold_for_calling 0.0 -A GCContent -o output.vcf -metrics output.metrics -dt NONE</div>
+
+	<p>Accurate indel calling from short reads is still subject to considerable (Freedman et al., 2014; Zhang et al., 2014), and there is little prior information about the distribution of indels in wolf genome. Furthermore, we did not have method to validate indel calls at the genome-wide scale in a manner comparable to that available for SNP calls. Thus, we called indels only for use in the filtering out of SNPs proximate to them that might be false positives, accepting that the indel calls are only approximations. Example command line was:</p>
+
+	<div class="ui positive message"> java -jar -Xmx8g GenomeAnalysisTK.jar -R reference_genome.fa -T UnifiedGenotyper -l INFO --genotyping_mode DISCOVERY --output_mode EMIT_ALL_CONFIDENT_SITES -I input_file.bam -glm INDEL --indel_heterozygosity 0.000125 --min_indel_count_for_genotyping 5 --min_base_quality_score 20 --standard_min_confidence_threshold_for_emitting 0.0 --standard_min_confidence_threshold_for_calling 0.0 -A GCContent -o output.vcf -metrics output.metrics -dt NONE</div>
+
+	<h2 class="ui header" id="2">2 Post-genotype filters</h2>
+	<p>After having the genotype calls from GATK, we applied several conservative data quality filters to control the data quality again. There were two levels of filters: genome filters (GF, which is based on the reference genome’s features and polymorphism across samples) and sample filters (SF, which is based on the genotype calls of each sample). We described the details of the filters below.</p>
+
+	<h3 class="ui header">2.1 Genome filters</h3>
+	<h4 class="ui header">Triallelic sites (MA)</h4> 
+	<p>Triallelic sites were more prone to genotyping errors (Freeman et al., 2014; Zhang et al., 2014). Besides, such site only contains a small fraction of the genome (0.002%). Thus we filter out all the triallelic sites.</p> 
+	<h4 class="ui header">Copy Number Variants (CNV)</h4> 
+	<p>Misalignment is possible when short reads mapped to the places of reference where contain novel CNVs. It can lead to false positive SNPs. To minimize this type of misalignment, we applied a set of CNV regions to filter out from downstream analyses. Since we did not detect CNVs in this study, we used previously discovered CNVs reported in reference genome and in a diverse panel of dog breeds (Axelsson et al, 2013; Nicholas et al., 2011; Freeman et al., 2014; Zhang et al., 2014). </p>
+	<h4 class="ui header">Repeat Regions (RR)</h4> 
+	<p>The repeat regions of the reference genome were identified with <a href="http://www.repeatmasker.org/" target="_blank">RepeatMasker</a> and <a href="http://tandem.bu.edu/trf/trf.html" target="_blank">Tandem Repeat Finder</a> (Benson, 1999). A large portion of the genome was repeat regions, but ancient repeats have diverged enough to allow accurate read mapping with short read alignment algorithms (Freeman et al., 2014; Zhang et al., 2014), thus we only filtered out younger repeats prone to sequence misalignment. Freedman et al. and Zhang et al. used 25% divergence as minimum repeat divergence threshold in six canids because they found that repeats in the ancient repeats show no increase in heterozygosity with decreasing repeat age.</p>
+	<h4 class="ui header">CpG</h4> 
+	<p>Mutation rate at CpG sites is higher than non-CpG sites (Hodgkinson and Eyre-Walker, 2011), so that regions enriched for CpGs may display elevated diversity and/or divergence leading to outliers in window-based analyses. We flagged any sites that even one of the samples fell within a CpG dinucleotide.</p>
+
+	<h3 class="ui header">2.2 Sample filters</h3>
+	<h4 class="ui header">Proximity to Indel (DL)</h4>
+	<p>Short reads are prone to misalignment near indels (Freeman et al., 2014; Zhang et al., 2014), and the local realignment around indels in our genotyping pipeline may not fully fix this problem. Therefore, to minimize the potential source of bias, for each sample we excluded any SNPs near indels (5bp, either up or downstream).</p> 
+	<h4 class="ui header">Genotype Quality (GQ)</h4>
+	<p>Genotype quality is the phred-scaled probabilities (10*log10(P[error]).), which represent the genotype calls do not match the true genotype. Hard genotype quality thresholds work well with high coverage (>20x), although it may cause underestimate of heterozygotes in low or moderate coverage genomes (Nielsen et al., 2011). All the samples in our study were sequenced at >20x. Moreover, the distribution of genotype quality showed that large proportion of SNP sites have GQ > 20 (IM06: 95.21%; IM07: 94.15%; XJ24: 94.98%; XJ30: 95.62%; QH11: 95.68%; QH16: 94.52%; TI09: 93.97%; TI32: 93.69%; RKWL: 95.80%). Therefore, we chose a hard minimum GQ threshold of 20 (P[error]=0.01).</p>
+	<h4 class="ui header">Depth of Coverage (DP)</h4>
+	<p>Excess Depth of Coverage for all sites. Extremely high depth of coverage relative to the genome-wide average likely indicates misalignment of reads generated from paralogous positions in the genome. Indeed, excess depth of coverage is a typical metric used to define CNV regions, but CNV filtering alone will fail to detect finer-resolution CNV signatures (Freeman et al., 2014; Zhang et al., 2014)]. Therefore, we conservatively filtered all sites if their depth of coverage exceeded twice the mean depth of coverage of each sample. </p>
+	<p>Minimum Depth of Coverage for non-variant sites. Since only the very old version of GATK will output the GQ value for non-variant sites and the version we are using does not, thus we did not have GQ filters for non-variant sites. Instead, we used minimum depth of coverage as one of the filters for non-variant sites. Here, we set the minimum threshold as eight.
+	</p> 
+	<h4 class="ui header">Clustered SNPs (DV)</h4>
+	<p>Within any sample, we excluded all SNPs that within 5 bp of another SNP.</p>
+	
+
+	<h3>2.3 Combination of filters</h3>
+	<p>For different types of analyses, we used different combination of GF and SF filters. GF1 and SF were used to analyze involving estimation of genome-wide patterns of diversity; GF2 and SF were used to analyze functional regions. The combination of the filters was:</p>
+	<h4 class="ui header">Non-variant sites:</h4>
+	<p>GF1: CNV, CpG, RR</p>
+	<p>GF2: CNV, RR</p>
+	<p>SF: DP >= 8, DP <= (2 x mean coverage)</p>
+	<h4 class="ui header">SNP sites:</h4>
+	<p>GF1: MA, CNV, CpG, RR</p>
+	<p>GF2: MA, CNV, RR</p>
+	<p>SF: GQ >= 20, DP <= (2 x mean coverage), DL, DV</p>
+
+	<h2 class="ui header">3 Reference</h2>
+	<p>Axelsson E., Ratnakumar A., Arendt M.L., et al. (2013) The genomic signature of dog domestication reveals adaptation to a starch-rich diet. Nature, 495, 360-364.</p>
+	<p>Benson G. (1999) Tandem repeats finder: a program to analyze DNA sequences. Nucleic Acids Res., 27, 573-580.</p>
+	<p>DePristo M.A., Banks E., Poplin R., Garimella K.V., Maguire J.R. et al. (2011) A framework for variation discovery and genotyping using next-generation DNA sequencing data. Nat Genet. 43, 491-498.</p>
+	<p>Fan Z., Silva P., Gronau I., Wang S., Armero A.S. et al. (2016) Worldwide patterns of genomic variation and admixture in gray wolves. Genome Res., 26, 163-173.</p>
+	<p>Freedman A.H., Gronau I., Schweizer R.M., Ortega-Del Vecchyo D., Han E. et al. (2014) Genome sequencing highlights the dynamic early history of dogs. PLoS Genet., 10, e1004016.</p>
+	<p>Fan Z., Zhao G., Li P., Osada N., Xing J. et al. (2014) Whole-genome sequencing of tibetan macaque (<i>Macaca thibetana</i>) provides new insight into the macaque evolutionary history. Mol. Biol. Evol., 31, 1475-1489.</p>
+	<p>Hodgkinson A. and Eyre-Walker A. (2011) Variation in the mutation rate across mammalian genomes. Nat. Rev. Genet., 12, 756-766.</p>
+	<p>Langmead B. and Salzberg S.L. (2012) Fast gapped-read alignment with Bowtie 2. Nat Methods. 9, 357-359.</p>
+	<p>Nicholas TJ, Baker C, Eichler EE, Akey JM. (2011) A high-resolution integrated map of copy number polymorphisms within and between breeds of the modern domesticated dog. BMC Genomics, 12, 414.</p>
+	<p>Nielsen R., Paul J.S., Albrechtsen A., Song Y.S. (2011) Genotype and SNP calling from next-generation sequencing data. Nat. Rev. Genet., 12, 443-451.</p>
+	<p>Zhang W., Fan Z., Han E., Hou R., Zhang L. et al. (2014) Hypoxia adaptations in the grey wolf (Canis lupus chanco) from Qinghai-Tibet Plateau. PLoS Genet. 10, e1004466.</p>	
+</div>
+{% endblock %}

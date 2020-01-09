@@ -1,0 +1,164 @@
+{% set urlname="gene" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+{{ gene.ensembl }} - MACSNPdb
+{% endblock %}
+
+{% block main %}
+
+<h2 class="ui brown header">{{ gene.ensembl }} <a class="ui yellow right floated button" href="{{ url('csnps', kwargs={'gid':gene.ensembl}) }}">View SNPs in CDS</a></h2>
+<h3 class="ui header">Gene Information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Gene ID</th><th>Gene Symbol</th><th>Gene Name</th><th>Biotype</th><th>Strand</th><th>Location</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/Gene/Summary?g={{ gene.ensembl }}" target="_blank">{{ gene.ensembl }} <i class="external alternate icon"></i></a></td>
+			<td>{{ gene.name }}</td>
+			<td>{{ gene.description }}</td>
+			<td>{{ gene.get_biotype_display() }}</td>
+			<td>{{ gene.strand }}</td>
+			<td>Chr{{ gene.chromosome.id }}: {{ gene.start }}-{{ gene.end }}</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 class="ui header">Transcript Information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Transcript ID</th><th>Protein ID</th><th>Strand</th><th>Location</th></tr>
+	</thead>
+	<tbody>
+		{% for transcript in transcripts %}
+		<tr>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/Transcript/Summary?t={{ transcript.ensembl }}" target="_blank">{{ transcript.ensembl }} <i class="external alternate icon"></i></a></td>
+			<td><a href="http://www.ensembl.org/Macaca_mulatta/Transcript/ProteinSummary?t={{ transcript.ensembl }}" target="_blank">{{ transcript.protein }} <i class="external alternate icon"></i></a></td>
+			<td>{{ transcript.strand }}</td>
+			<td>Chr{{ transcript.gene.chromosome.id }}: {{ transcript.start }}-{{ transcript.end }}</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="4">N/A</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h3 class="ui header">Human Orthology</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Ensembl ID</th><th>HGNC ID</th><th>Symbol</th><th>Name</th><th>Support</th></tr>
+	</thead>
+	<tbody>
+		{% for orthology in orthologys %}
+		<tr>
+			<td><a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?g={{ orthology.human_ensembl }}" target="_blank">{{ orthology.human_ensembl }} <i class="external alternate icon"></i></a></td>
+			<td><a href="https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id={{ orthology.human_hgnc }}" target="_blank">{{ orthology.human_hgnc }} <i class="external alternate icon"></i></a></td>
+			<td>{{ orthology.human_symbol }}</td>
+			<td>{{ orthology.human_name }}</td>
+			<td>{{ orthology.support|replace(',', ', ') }}</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="4">N/A</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h3 class="ui header">Functional Annotation</h3>
+<div id="function-annotation">
+<div class="ui top attached tabular menu">
+	<a class="item active" data-tab="go">GO</a>
+	<a class="item" data-tab="kegg">KEGG</a>
+	<a class="item" data-tab="pfam">Pfam</a>
+	<a class="item" data-tab="interpro">InterPro</a>
+</div>
+
+<div class="ui bottom attached tab segment active" data-tab="go">
+	<table class="ui very basic table">
+		<thead>
+			<tr><th>GO Term</th><th>Description</th><th>Ontology</th></tr>
+		</thead>
+		<tbody>
+			{% for go in gos %}
+			<tr>
+				<td><a href="http://amigo.geneontology.org/amigo/term/{{ go.function.accession }}" target="_blank">{{ go.function.accession }}</a></td>
+				<td>{{ go.function.description }}</td>
+				<td>{{ go.function.supplement }}</td>
+			</tr>
+			{% else %}
+			<tr><td colspan="3" class="center aligned">N/A</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="kegg">
+	<table class="ui very basic table">
+		<thead>
+			<tr><th>Pathway ID</th><th>Description</th><th>Category</th></tr>
+		</thead>
+		<tbody>
+			{% for kegg in keggs %}
+			<tr>
+				<td><a href="http://www.kegg.jp/dbget-bin/www_bget?{{ kegg.function.accession }}" target="_blank">{{ kegg.function.accession }}</a></td>
+				<td>{{ kegg.function.description }}</td>
+				<td>{{ kegg.function.supplement }}</td>
+			</tr>
+			{% else %}
+			<tr><td colspan="3" class="center aligned">N/A</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="pfam">
+	<table class="ui very basic table">
+		<thead>
+			<tr><th>Pfam ID</th><th>Description</th><th>Clan</th></tr>
+		</thead>
+		<tbody>
+			{% for pfam in pfams %}
+			<tr>
+				<td><a href="http://pfam.xfam.org/family/{{ pfam.function.accession }}" target="_blank">{{ pfam.function.accession }}</a></td>
+				<td>{{ pfam.function.description }}</td>
+				<td>
+					{% if pfam.function.supplement %}
+					<a href="">{{ pfam.function.supplement }}</a>
+					{% else %}
+					N/A
+					{% endif %}
+				</td>
+			</tr>
+			{% else %}
+			<tr><td colspan="3" class="center aligned">N/A</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="interpro">
+	<table class="ui very basic table">
+		<thead>
+			<tr><th>InterPro ID</th><th>Description</th><th>Type</th></tr>
+		</thead>
+		<tbody>
+			{% for interpro in ips %}
+			<tr>
+				<td><a href="http://www.ebi.ac.uk/interpro/entry/{{ interpro.function.accession }}" target="_blank">{{ interpro.function.accession }}</a></td>
+				<td>{{ interpro.function.description }}</td>
+				<td>
+					{% if interpro.function.supplement %}
+					{{ interpro.function.supplement }}
+					{% else %}
+					N/A
+					{% endif %}
+				</td>
+			</tr>
+			{% else %}
+			<tr><td colspan="3" class="center aligned">N/A</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+</div>
+{% endblock %}

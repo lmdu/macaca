@@ -1,0 +1,34 @@
+{% set urlname = "organism" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+Individual information - MACSNPdb
+{% endblock %}
+
+{% block main %}
+<div class="ui header">Individual Detailed Information</div>
+<table class="ui compact celled table">
+	<thead>
+		<tr>
+			<th>Individual</th>
+			<th>Taxonomy</th>
+			<th>Scientific name</th>
+			<th>Common name</th>
+			<th>Group</th>
+			<th>Location</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for s in samples %}
+		<tr>
+			<td>{{s.code}}</td>
+			<td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{s.species.taxonomy}}" target="_blank">{{s.species.taxonomy}}</a></td>
+			<td><i>{{s.species.scientific}}</i></td>
+			<td>{{s.species.common}}</td>
+			<td>{{s.species.group.name}}</td>
+			<td>{{s.location}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% set urlname="drugs" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}Disease genes - MACSNPdb{% endblock %}
+
+{% block head %}
+<script src="{{ static('macaca/datatable/jquery.dataTables.min.js') }}"></script>
+<script src="{{ static('macaca/datatable/dataTables.semanticui.min.js') }}"></script>
+<link href="{{ static('macaca/datatable/dataTables.semanticui.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block main %}
+<h2 class="ui header">Disease Associated Genes</h2>
+<table class="ui table">
+	<thead>
+		<tr>
+			<th class="single line">Ensembl ID</th>
+			<th class="single line">Symbol</th>
+			<th>Name</th>
+			<th class="single line">Phenotype OMIM</th>
+			<th class="single line">SNPs in CDS</th>
+		</tr>
+	</thead>
+</table>
+<script type="text/javascript">
+$('.ui.table').DataTable({
+	columnDefs: [
+		{ "orderable": false, "targets": -1}
+	],
+	processing: true,
+	serverSide: true,
+	ajax: {
+		url: '{{ url("diseases") }}',
+		type: 'POST'
+	}
+});
+</script>
+{% endblock %}

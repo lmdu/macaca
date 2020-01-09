@@ -1,0 +1,88 @@
+{% set urlname="genes" %}
+{% extends "macaca/base.html" %}
+
+{% block title %} Search for {{ paras.tag }} {% endblock %}
+
+{% block main %}
+<div class="ui header">Search for {{ paras.tag }}</div>
+
+<div class="ui grid">
+	<div class="eight wide column">
+		<form action="{{ url('macsnvdb:search') }}" method="get" id="snps-filter">
+			<input type="hidden" id="page" name="page" value="{{ paras.page }}">
+			<input type="hidden" name="q" value="{{ paras.tag }}">
+		
+			Show
+			<select name="records" class="ui numperpage compact selection dropdown">
+				{% set pages=[10, 25, 50, 100] %}
+				{% for v in pages %}
+				<option value="{{v}}" {% if paras.records==v %} selected="selected" {% endif %}>{{v}}</option>
+				{% endfor %}
+			</select>
+			entries
+		</form>
+	</div>
+
+	<div class="right aligned eight wide column">
+		<div class="ui basic result segment">
+			<span>{{ genes.paginator.count }} Genes</span>
+			<span>{{ genes.number }} of {{ genes.paginator.num_pages }} Pages</span>
+		</div>
+	</div>
+</div>
+
+<table class="ui celled table">
+	<thead>
+		<tr>
+			<th>Ensembl ID</th>
+			<th>Symbol</th>
+			<th>Name</th>
+			<th>Biotype</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for gene in genes %}
+		<tr>
+			<td><a href="{{ url('macsnvdb:gene', kwargs={'gid':gene.ensembl}) }}">{{ gene.ensembl }}</a></td>
+			<td>{{ gene.name }}</td>
+			<td>{{ gene.description }}</td>
+			<td>{{ gene.biotype }}</td>
+		</tr>
+		{% else %}
+		<tr><td colspan="4" class="center aligned">No Results Found</td></tr>
+		{% endfor %}
+	</tbody>
+	<tfoot>
+		<tr><th colspan="4">
+		<div class="ui pager right floated pagination menu">
+			{% if genes.has_previous() %}
+			<a class="icon item" data-num="{{ genes.previous_page_number() }}">
+				<i class="left chevron icon"></i>
+			</a>
+			{% endif %}
+
+			{% for i in range(3, 0, -1) %}
+			{% if genes.number - i > 0 %}
+			<a class="item" data-num="{{genes.number-i}}">{{genes.number-i}}</a>
+			{% endif %}
+			{% endfor %}
+			
+			<span class="item active" data-num="{{genes.number}}">{{genes.number}}</span>
+			
+			{% for i in range(1, 4) %}
+			{% if genes.number + i <= genes.paginator.num_pages %}
+			<a class="item" data-num="{{genes.number+i}}">{{genes.number+i}}</a>
+			{% endif %}
+			{% endfor %}
+
+			{% if genes.has_next() %}
+			<a class="icon item" data-num="{{ genes.next_page_number() }}">
+				<i class="right chevron icon"></i>
+			</a>
+			{% endif %}
+		</div>
+	</th></tr>
+	</tfoot>
+</table>
+
+{% endblock %}

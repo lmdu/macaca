@@ -1,0 +1,41 @@
+{% set urlname="drugs" %}
+{% extends "macaca/base.html" %}
+
+{% block title %}
+{{drugs[0].drug_id}} - MACSNPdb
+{% endblock %}
+
+{% block main %}
+<h3 class="ui header">Drug information</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Drugbank ID</th><th>Drug Name</th><th>Drug Type</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><a href="https://www.drugbank.ca/drugs/{{ drugs[0].drug_id }}" target="_blank">{{ drugs[0].drug_id }} <i class="external alternate icon"></a></td>
+			<td>{{ drugs[0].drug_name }}</td>
+			<td>{{ drugs[0].get_drug_type_display() }}</td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 class="ui header">Drug targeted genes</h3>
+<table class="ui table">
+	<thead>
+		<tr><th>Ensembl ID</th><th>Symbol</th><th>Name</th><th>Human Orthology</th><th>Drugbank ID</th><th>SNPs in CDS</th></tr>
+	</thead>
+	<tbody>
+		{% for drug in drugs %}
+		<tr>
+			<td><a href="{{ url('gene', kwargs={'gid':drug.orthology.gene.ensembl}) }}">{{ drug.orthology.gene.ensembl }}</a></td>
+			<td>{{ drug.orthology.gene.name }}</td>
+			<td>{{ drug.orthology.gene.description }}</td>
+			<td><a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?g={{ drug.orthology.human_ensembl }}" target="_blank">{{ drug.orthology.human_ensembl }}</a></td>
+			<td><a href="https://www.drugbank.ca/biodb/bio_entities/{{ drug.partner }}" target="_blank">{{ drug.partner }}</a></td>
+			<td><a href="{{ url('csnps', kwargs={'gid':drug.orthology.gene.ensembl}) }}" class="ui basic orange button">Browse</a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}
